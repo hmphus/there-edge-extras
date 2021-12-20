@@ -143,6 +143,48 @@ body {
   transform:rotate(var(--heading));
 }
 
+.compass .markings {
+  position:absolute;
+  left:0px;
+  top:0px;
+  width:198px;
+  height:198px;
+  transform:rotate(45deg);
+}
+
+.compass .markings .mark {
+  position:absolute;
+  background-color:#666;
+}
+
+.compass .markings .mark[data-id="northeast"] {
+  left:98px;
+  top:-2px;
+  width:2px;
+  height:6px;
+}
+
+.compass .markings .mark[data-id="northwest"] {
+  left:-2px;
+  top:98px;
+  width:6px;
+  height:2px;
+}
+
+.compass .markings .mark[data-id="southeast"] {
+  right:-2px;
+  bottom:98px;
+  width:6px;
+  height:2px;
+}
+
+.compass .markings .mark[data-id="southwest"] {
+  right:98px;
+  bottom:-2px;
+  width:2px;
+  height:6px;
+}
+
 .compass .button[data-id="close"] {
   position:absolute;
   left:185px;
