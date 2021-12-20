@@ -77,23 +77,23 @@ There.init({
     } else {
         latitude = -2.83863583089598e-09 * position.y * position.y + 0.0112260357825775 * position.y - 11028.605321244;
     }
+    let scale = 1 << There.data.zoom;
     let sinY = Math.min(Math.max(Math.sin(latitude * Math.PI / 180.0), -0.9999), 0.9999);
     let point = {
-      x: 256.0 * (0.5 + longitude / 360.0),
-      y: 256.0 * (0.5 - Math.log((1.0 + sinY) / (1.0 - sinY)) / (4.0 * Math.PI)),
+      x: scale * (0.5 + longitude / 360.0),
+      y: scale * (0.5 - Math.log((1.0 + sinY) / (1.0 - sinY)) / (4.0 * Math.PI)),
     };
-    let scale = 1 << There.data.zoom;
     let offset = {
-      x: 128 - (Math.floor(point.x * scale) % 256),
-      y: 128 - (Math.floor(point.y * scale) % 256),
+      x: 128 - (Math.floor(point.x * 256.0) % 256),
+      y: 128 - (Math.floor(point.y * 256.0) % 256),
     };
     if (There.data.offset.x != offset.x || There.data.offset.y != offset.y) {
       There.data.offset = offset;
-      $('.compass .map .tile').css('transform', `translate(${offset.x}px, ${offset.y}px)`);
+      $('.compass').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`)
     }
     let tile = {
-      x: Math.floor(point.x * scale / 256.0),
-      y: Math.floor(point.y * scale / 256.0),
+      x: Math.floor(point.x),
+      y: Math.floor(point.y),
     };
     if (There.data.tile.x != tile.x || There.data.tile.y != tile.y) {
       There.data.tile = tile;
