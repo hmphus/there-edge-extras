@@ -23,12 +23,12 @@ There.init({
   },
 
   onVariable: function(name, value) {
-    if (name == 'there_teleporting') {
+    if (name == 'there_teleporting' || name == 'there_ready') {
       $('.compass').attr(name.replace('there_', 'data-'), value);
     }
 
     if (name == 'there_avheading') {
-      $('.compass .map').css('transform', `rotate(${-value}deg)`);
+      $('.compass').css('--heading', `${value}deg`);
     }
 
     if (name == 'there_ready' && value == 1) {

@@ -20,6 +20,10 @@ body {
   transition-duration:250ms;
 }
 
+.compass:not([data-ready="1"]) {
+  display:none;
+}
+
 .compass[data-teleporting="1"] {
   opacity:0;
   pointer-events:none;
@@ -34,6 +38,7 @@ body {
   border-radius:100px;
   background-color:#307088;
   overflow:hidden;
+  transform:rotate(calc(0deg - var(--heading)));
 }
 
 .compass .tile {
@@ -70,10 +75,71 @@ body {
   position:absolute;
   left:0px;
   top:0px;
-  width:200px;
-  height:200px;
-  border-radius:100px;
+  width:198px;
+  height:198px;
+  border:1px solid #666;
+  border-radius:99px;
   background-image:url(compass2.png);
+  background-position:-1px -1px;
+}
+
+.compass .rose {
+  position:absolute;
+  left:1px;
+  top:1px;
+  width:198px;
+  height:198px;
+  border-radius:99px;
+  overflow:hidden;
+  transform:rotate(calc(0deg - var(--heading)));
+}
+
+.compass .direction {
+  position:absolute;
+  width:16px;
+  height:16px;
+  border:1px solid #666;
+  background-image:linear-gradient(var(--heading), #73a0a4, #b0f6fc, #e5fcfe);
+}
+
+.compass .direction[data-id="north"] {
+  left:90px;
+  top:-1px;
+  border-bottom-left-radius:9px;
+  border-bottom-right-radius:9px;
+}
+
+.compass .direction[data-id="south"] {
+  left:90px;
+  bottom:-1px;
+  border-top-left-radius:9px;
+  border-top-right-radius:9px;
+}
+
+.compass .direction[data-id="east"] {
+  right:-1px;
+  top:90px;
+  border-top-left-radius:9px;
+  border-bottom-left-radius:9px;
+}
+
+.compass .direction[data-id="west"] {
+  left:-1px;
+  top:90px;
+  border-top-right-radius:9px;
+  border-bottom-right-radius:9px;
+}
+
+.compass .direction span {
+  display:block;
+  width:16px;
+  height:16px;
+  line-height:16px;
+  text-align:center;
+  font-size:11px;
+  font-weight:bold;
+  color:#666;
+  transform:rotate(var(--heading));
 }
 
 .compass .button[data-id="close"] {
@@ -82,14 +148,14 @@ body {
   top:3px;
   width:13px;
   height:13px;
-  background-image:url(compass.png);
-  background-position:-86px -38px;
+  background-image:url(compass2.png);
+  background-position:-187px 0px;
 }
 
 .compass .button[data-id="close"]:hover {
-  background-position-y:-52px;
+  background-position-y:-13px;
 }
 
 .compass .button[data-id="close"]:hover:active {
-  background-position-y:-66px;
+  background-position-y:-26px;
 }
