@@ -29,16 +29,20 @@ body {
   pointer-events:none;
 }
 
-.compass .map {
+.compass .map,
+.compass .icons {
   position:absolute;
   left:0px;
   top:0px;
   width:200px;
   height:200px;
   border-radius:100px;
-  background-color:#307088;
   overflow:hidden;
   transform:rotate(calc(0deg - var(--heading)));
+}
+
+.compass .map {
+  background-color:#307088;
 }
 
 .compass .tile {
@@ -70,6 +74,44 @@ body {
 
 .compass .tile[data-y="2"] {
   top:227px;
+}
+
+.compass .tile .icon {
+  display:none;
+  position:absolute;
+  margin-left:-4px;
+  margin-top:-4px;
+  width:6px;
+  height:6px;
+  border:1px solid #666;
+  border-radius:4px;
+  background-image:url(compass2.png);
+  background-position-x:-181px;
+  transform:rotate(var(--heading));
+}
+
+.compass .tile .icon[data-type="hangout"] {
+  display:block;
+  background-position-y:0px;
+}
+
+
+.compass .tile .icon[data-type="neighborhood"],
+.compass .tile .icon[data-type="funzone"] {
+  display:block;
+  background-position-y:-6px;
+}
+
+.compass .tile .icon[data-type="pointofinterest"] {
+  display:block;
+  background-position-y:-12px;
+}
+
+.compass .tile .icon[data-type="hotspot"],
+.compass .tile .icon[data-type="avdensityonly"],
+.compass .tile .icon[data-type="waypoint"] {
+  display:block;
+  background-position-y:-18px;
 }
 
 .compass .overlay {
