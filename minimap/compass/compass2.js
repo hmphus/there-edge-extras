@@ -66,28 +66,47 @@ There.init({
     } catch(error) {
       return;
     }
-    There.calcLocation(There.data.location, position, function(offset) {
-      $('.compass').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`)
-    }, function(tile) {
-      for (let x in [0, 1, 2]) {
-        for (let y in [0, 1, 2]) {
-          let offsetTile = {
-            x: tile.x + (x - 1),
-            y: tile.y + (y - 1),
-          };
-          let url = There.getTileUrl(offsetTile);
-          $(`.compass .map .tile[data-x="${x}"][data-y="${y}"]`).css('background-image', `url(${url})`);
-          let divIconsTile = $(`.compass .icons .tile[data-x="${x}"][data-y="${y}"]`);
-          $(divIconsTile).empty();
-          let places = There.getTilePlaces(offsetTile);
-          for (let place of places) {
-            let divIcon = $('<div class="icon"></div>');
-            $(divIcon).css('left', `${Number(place.offset[0])}px`).css('top', `${Number(place.offset[1])}px`);
-            $(divIcon).attr('data-type', place.type);
-            $(divIconsTile).append($(divIcon));
+    There.calcLocation(There.data.location, position, {
+      onPosition: function(position) {
+        let height = Math.floor(Math.max(Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z) - 6000000.0, 0.0));
+        let text = '';
+        if (height < 1000) {
+          text = Number(height).toLocaleString('en-us', {
+            maximumFractionDigits: 0,
+          }) + 'm';
+        } else {
+          let digits = Math.max(0, 6 - height.toString().length);
+          text = Number(height / 1000.0).toLocaleString('en-us', {
+            minimumFractionDigits: digits,
+            maximumFractionDigits: digits,
+          }) + 'km';
+        }
+        $('.compass .altimeter span').text(text);
+      },
+      onOffset: function(offset) {
+        $('.compass').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`)
+      },
+      onTile: function(tile) {
+        for (let x in [0, 1, 2]) {
+          for (let y in [0, 1, 2]) {
+            let offsetTile = {
+              x: tile.x + (x - 1),
+              y: tile.y + (y - 1),
+            };
+            let url = There.getTileUrl(offsetTile);
+            $(`.compass .map .tile[data-x="${x}"][data-y="${y}"]`).css('background-image', `url(${url})`);
+            let divIconsTile = $(`.compass .icons .tile[data-x="${x}"][data-y="${y}"]`);
+            $(divIconsTile).empty();
+            let places = There.getTilePlaces(offsetTile);
+            for (let place of places) {
+              let divIcon = $('<div class="icon"></div>');
+              $(divIcon).css('left', `${Number(place.offset[0])}px`).css('top', `${Number(place.offset[1])}px`);
+              $(divIcon).attr('data-type', place.type).attr('title', place.name);
+              $(divIconsTile).append($(divIcon));
+            }
           }
         }
-      }
+      },
     });
   },
 
@@ -103,11 +122,12 @@ There.init({
     });
   },
 
-  calcLocation: function(location, position, onOffset, onTile) {
+  calcLocation: function(location, position, events) {
     if (location.position?.x == position.x && location.position?.y == position.y && location.position?.z == position.z) {
       return;
     }
     location.position = position;
+    events?.onPosition?.(position);
     var longitude = 0.000109861473792 * position.x + 4.11852320371869;
     var latitude;
     if (position.y < 1000000.0) {
@@ -127,9 +147,7 @@ There.init({
     };
     if (location.offset?.x != offset.x || location.offset?.y != offset.y) {
       location.offset = offset;
-      if (onOffset != undefined) {
-        onOffset(offset);
-      }
+      events?.onOffset?.(offset);
     }
     let tile = {
       x: Math.floor(point.x),
@@ -137,9 +155,7 @@ There.init({
     };
     if (location.tile?.x != tile.x || location.tile?.y != tile.y) {
       location.tile = tile;
-      if (onTile != undefined) {
-        onTile(tile);
-      }
+      events?.onTile?.(tile);
     }
   },
 
@@ -168,14 +184,7 @@ There.init({
   },
 
   getTilePlaces: function(tile) {
-    var places = There.data.places[tile.x];
-    if (places != undefined) {
-      places = places[tile.y];
-      if (places != undefined) {
-        return places;
-      }
-    }
-    return [];
+    return There.data.places[tile.x]?.[tile.y] ?? [];
   },
 
   testTile: function(tile, values) {

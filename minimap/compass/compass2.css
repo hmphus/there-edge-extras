@@ -18,6 +18,7 @@ body {
   border-radius:5px;
   transition-property:opacity;
   transition-duration:250ms;
+  overflow:hidden;
 }
 
 .compass:not([data-ready="1"]) {
@@ -43,6 +44,7 @@ body {
 
 .compass .map {
   background-color:#307088;
+  pointer-events:none;
 }
 
 .compass .tile {
@@ -124,6 +126,7 @@ body {
   border-radius:99px;
   background-image:url(compass2.png);
   background-position:-1px -1px;
+  pointer-events:none;
 }
 
 .compass .rose {
@@ -135,6 +138,7 @@ body {
   border-radius:99px;
   overflow:hidden;
   transform:rotate(calc(0deg - var(--heading)));
+  pointer-events:none;
 }
 
 .compass .direction {
@@ -225,6 +229,26 @@ body {
   bottom:-2px;
   width:2px;
   height:6px;
+}
+
+.compass .altimeter {
+  position:absolute;
+  left:0px;
+  right:0px;
+  bottom:22px;
+  font-size:0px;
+  text-align:center;
+  pointer-events:none;
+}
+
+.compass .altimeter div {
+  display:inline-block;
+  padding:0px 4px 1px 4px;
+  background-color:#b0f6fcc0;
+  border:1px solid #666;
+  border-radius:4px;
+  font-size:10px;
+  color:#333;
 }
 
 .compass .button[data-id="close"] {
