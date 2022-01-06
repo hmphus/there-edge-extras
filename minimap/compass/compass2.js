@@ -102,6 +102,9 @@ There.init({
               let divIcon = $('<div class="icon"></div>');
               $(divIcon).css('left', `${Number(place.offset[0])}px`).css('top', `${Number(place.offset[1])}px`);
               $(divIcon).attr('data-type', place.type).attr('title', place.name);
+              $(divIcon).on('mouseover', function(event) {
+                There.playSound('control rollover');
+              });
               $(divIconsTile).append($(divIcon));
             }
           }
