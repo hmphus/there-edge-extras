@@ -34,18 +34,20 @@ There.init({
     }
 
     if (name == 'there_ready' && value == 1) {
-      There.fetchPilotXml();
+      Promise.all([
+        There.fetchPilotXml(),
+        There.fetchConfigJson(),
+      ]).then(function() {
+        There.fetchCommMessageXml();
+      });
     }
   },
 
-  fetchPilotXml: function() {
-    There.fetch({
+  fetchPilotXml: async function() {
+    await There.fetchAsync({
       path: '/ClientLoginGui/pilotInfo',
       dataType: 'xml',
       success: There.onPilotXml,
-      complete: function() {
-        There.fetchCommMessageXml();
-      },
     });
   },
 
@@ -56,6 +58,27 @@ There.init({
     if (doid == There.variables.there_pilotdoid) {
       There.variables.there_pilotname = name;
     }
+  },
+
+  fetchConfigJson: async function() {
+    await There.fetchAsync({
+      path: '/Resources/shortcutbar/shortcutbar2.json',
+      dataType: 'json',
+      success: There.onConfigJson,
+    });
+  },
+
+  onConfigJson: function(json) {
+    for (let command in json.commands) {
+      entry = json.commands[command];
+      for (let alias of entry.aliases ?? []) {
+        if (alias != command) {
+          json.commands[alias] = entry;
+        }
+      }
+      delete entry.aliases;
+    }
+    There.data.config = json;
   },
 
   fetchCommMessageXml: function() {
@@ -90,10 +113,110 @@ There.init({
     for (let xmlMsg of xmlData.childNodes) {
       if (xmlMsg.nodeName == 'msg') {
         const author = xmlMsg.getElementsByTagName('authorName')[0].childNodes[0].nodeValue;
-        const text = xmlMsg.getElementsByTagName('text')[0].childNodes[0].nodeValue.trim();
+        let text = '';
+        for (let xmlChild of xmlMsg.getElementsByTagName('text')[0].childNodes) {
+          if (xmlChild.tagName == undefined) {
+            text += xmlChild.nodeValue;
+          } else if (xmlChild.tagName == 'URL') {
+            let url = xmlChild.childNodes[0].nodeValue;
+            There.data.url = url;
+            text += url;
+          }
+        }
+        text = text.trim();
         if (author == There.variables.there_pilotname && text.startsWith('/')) {
+          let args = text.split(' ');
+          let command = args.shift().slice(1).toLowerCase();
+          if (command != '') {
+            There.handleListenerCommand(command, args);
+          }
         }
       }
     }
   },
+
+  handleListenerCommand: function(command, args) {
+    let entry = There.data.config.commands[command];
+    if (entry == undefined) {
+      return;
+    }
+    if (args.length > 0) {
+      if (entry.arguments == undefined) {
+        return;
+      }
+      if (args.length in entry.arguments) {
+        entry = entry.arguments[args.length];
+      } else if ('+' in entry.arguments) {
+        entry = entry.arguments['+'];
+      } else {
+        return;
+      }
+    }
+    if (entry.fscommand != undefined) {
+      There.fsCommand(entry.fscommand.command, There.applyListenerArgs(entry.fscommand.query, args));
+    }
+    if (entry.guicommand != undefined) {
+      There.guiCommand(entry.guicommand);
+    }
+    if (entry.scripthook != undefined) {
+      let query = {
+        Path: entry.scripthook,
+      };
+      There.fetch({
+        path: '/ScriptHook/Invoke',
+        query: query,
+        dataType: 'xml',
+      });
+    }
+    if (entry.environment != undefined) {
+      for (let variable of entry.environment) {
+        let query = {
+          variable: There.applyListenerArgs(variable.key, args),
+          value: There.applyListenerArgs(variable.value, args),
+          modify: '',
+        };
+        There.fetch({
+          path: '/environment/top',
+          query: query,
+          dataType: 'xml',
+        });
+      }
+    }
+  },
+
+  applyListenerArgs: function(data, args, joined) {
+    if (joined == undefined) {
+      joined = args.join(' ');
+    }
+    if (args.length > 0 && data != undefined) {
+      switch (data.constructor.name) {
+        case 'String': {
+          if (data.includes('$')) {
+            for (let i = 0; i < args.length; i++) {
+              data = data.replace(`$${i + 1}`, args[i]);
+            }
+            data = data.replace('$+', joined);
+          }
+          break;
+        }
+        case 'Array': {
+          entries = data;
+          data = [];
+          for (let entry of entries) {
+            data.push(There.applyListenerArgs(entry, args, joined));
+          }
+          break;
+        }
+        case 'Object': {
+          entries = data;
+          data = {};
+          for (let key in entries) {
+            data[key] = There.applyListenerArgs(entries[key], args, joined);
+          }
+          break;
+        }
+      }
+    }
+    return data;
+  }
 });

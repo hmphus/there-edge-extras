@@ -1,0 +1,558 @@
+{
+  "commands": {
+    "actionmode": {
+      "aliases": ["am"],
+      "scripthook": "/mainMenu/There/Customize/World/Default to Action Mode/activate"
+    },
+    "logout": {
+      "aliases": ["bye"],
+      "scripthook": "/mainMenu/There/Logout/activate"
+    },
+    "exit": {
+      "scripthook": "/mainMenu/There/Exit/activate"
+    },
+    "settings": {
+      "scripthook": "/mainMenu/There/Settings/activate"
+    },
+    "volume": {
+      "aliases": ["vol"],
+      "scripthook": "/mainMenu/There/Customize/World/Volume/activate"
+    },
+    "chatgroup": {
+      "aliases": ["aj"],
+      "scripthook": "/mainMenu/There/Customize/World/Auto-Join Chat Groups/activate"
+    },
+    "alltags": {
+      "aliases": ["tags", "allnames", "names"],
+      "scripthook": "/mainMenu/There/Customize/World/Nametags/Show all visible/activate"
+    },
+    "neartags": {
+      "aliases": ["nearnames"],
+      "scripthook": "/mainMenu/There/Customize/World/Nametags/Show all near/activate"
+    },
+    "nearesttags": {
+      "aliases": ["nearestnames"],
+      "scripthook": "/mainMenu/There/Customize/World/Nametags/Show 10 nearest/activate"
+    },
+    "notags": {
+      "aliases": ["nonames"],
+      "scripthook": "/mainMenu/There/Customize/World/Nametags/Show none/activate"
+    },
+    "labels": {
+      "environment": [{
+        "key": "showObjectLabels",
+        "value": "1"
+      }]
+    },
+    "nolabels": {
+      "environment": [{
+        "key": "showObjectLabels",
+        "value": "0"
+      }]
+    },
+    "speech": {
+      "environment": [{
+        "key": "hideSpeech",
+        "value": "0"
+      }]
+    },
+    "nospeech": {
+      "environment": [{
+        "key": "hideSpeech",
+        "value": "1"
+      }]
+    },
+    "fps": {
+      "environment": [{
+        "key": "flipHud",
+        "value": "1"
+      }]
+    },
+    "nofps": {
+      "environment": [{
+        "key": "flipHud",
+        "value": "0"
+      }]
+    },
+    "web": {
+      "guicommand": "browse",
+      "arguments": {
+        "+": {
+          "fscommand": {
+            "command": "browser",
+            "query": "$+"
+          }
+        }
+      }
+    },
+    "cam": {
+      "environment": [{
+        "key": "flipCamera",
+        "value": "1"
+      }]
+    },
+    "show": {
+      "environment": [{
+        "key": "noRenderHud",
+        "value": "0"
+      }]
+    },
+    "hide": {
+      "environment": [{
+        "key": "noRenderHud",
+        "value": "1"
+      }]
+    },
+    "zones": {
+      "environment": [{
+        "key": "showOtherZones",
+        "value": "1"
+      }]
+    },
+    "nozones": {
+      "environment": [{
+        "key": "showOtherZones",
+        "value": "0"
+      }]
+    },
+    "colview": {
+      "environment": [{
+        "key": "colView",
+        "value": "1"
+      }]
+    },
+    "nocolview": {
+      "environment": [{
+        "key": "colView",
+        "value": "0"
+      }]
+    },
+    "changeme": {
+      "aliases": ["cm", "wear"],
+      "scripthook": "/mainMenu/My Things/ChangeMe/activate"
+    },
+    "communicator": {
+      "aliases": ["com"],
+      "guicommand": "communicator"
+    },
+    "forcefield": {
+      "aliases": ["ff", "f"],
+      "guicommand": {
+        "action": "forcefield",
+        "toggle": "1"
+      }
+    },
+    "cruisecontrol": {
+      "aliases": ["cc"],
+      "guicommand": {
+        "action": "togglepreference",
+        "pref": "CruiseControl"
+      }
+    },
+    "mute": {
+      "guicommand": {
+        "action": "setpreference",
+        "pref": "MuteAllSound",
+        "value": "0"
+      }
+    },
+    "unmute": {
+      "guicommand": {
+        "action": "setpreference",
+        "pref": "MuteAllSound",
+        "value": "1"
+      }
+    },
+    "handsfree": {
+      "aliases": ["hf"],
+      "guicommand": {
+        "action": "voiceTalk",
+        "toggle": "1"
+      }
+    },
+    "voice": {
+      "aliases": ["v"],
+      "guicommand": {
+        "action": "togglepreference",
+        "pref": "VoiceToggle"
+      }
+    },
+    "undo": {
+      "aliases": ["goback"],
+      "scripthook": "/mainMenu/Places/Undo Last Teleport/activate"
+    },
+    "im": {
+      "scripthook": "/mainMenu/People/IM/activate"
+    },
+    "summon": {
+      "aliases": ["sm", "get"],
+      "scripthook": "/mainMenu/People/Summon/activate"
+    },
+    "ignore": {
+      "scripthook": "/mainMenu/People/Ignore/Ignore Someone/activate"
+    },
+    "organize": {
+      "aliases": ["o"],
+      "scripthook": "/mainMenu/My Things/Organize.../activate"
+    },
+    "favorite": {
+      "aliases": ["add"],
+      "scripthook": "/mainMenu/Places/Add Favorite.../activate"
+    },
+    "actionbar": {
+      "aliases": ["ab"],
+      "scripthook": "/mainMenu/People/Action Bar/activate"
+    },
+    "local": {
+      "aliases": ["debug"],
+      "fscommand": {
+        "command": "browser",
+        "query": "http://127.0.0.1:9999/"
+      }
+    },
+    "var": {
+      "arguments": {
+        "2": {
+          "environment": [{
+            "key": "$1",
+            "value": "$2"
+          }]
+        }
+      }
+    },
+    "worldchat": {
+      "aliases": ["wc"],
+      "scripthook": "/mainMenu/People/Show World Chat/activate"
+    },
+    "activity": {
+      "aliases": ["flag"],
+      "scripthook": "/mainMenu/Activities/List Activity/activate"
+    },
+    "weather": {
+      "scripthook": "/mainMenu/There/Customize/World/Weather On/activate"
+    },
+    "music": {
+      "scripthook": "/mainMenu/There/Customize/World/Music Playing/activate"
+    },
+    "standard": {
+      "aliases": ["0"],
+      "scripthook": "/mainMenu/Views/Standard View/activate"
+    },
+    "low": {
+      "aliases": ["1"],
+      "scripthook": "/mainMenu/Views/Aerial View/Low Zoom/activate"
+    },
+    "medium": {
+      "aliases": ["2"],
+      "scripthook": "/mainMenu/Views/Aerial View/Medium Zoom/activate"
+    },
+    "high": {
+      "aliases": ["3"],
+      "scripthook": "/mainMenu/Views/Aerial View/High Zoom/activate"
+    },
+    "super": {
+      "aliases": ["4"],
+      "scripthook": "/mainMenu/Views/Aerial View/Super Zoom/activate"
+    },
+    "world": {
+      "aliases": ["5"],
+      "scripthook": "/mainMenu/Views/Aerial View/World Zoom/activate"
+    },
+    "body": {
+      "scripthook": "/mainMenu/Views/Body Mirror/activate"
+    },
+    "face": {
+      "scripthook": "/mainMenu/Views/Face Mirror/activate"
+    },
+    "first": {
+      "scripthook": "/mainMenu/Views/First Person/activate"
+    },
+    "brightblue": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Bright Blue/activate"
+    },
+    "brightgreen": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Bright Green/activate"
+    },
+    "brightred": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Bright Red/activate"
+    },
+    "brown": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Brown/activate"
+    },
+    "burgundy": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Burgundy/activate"
+    },
+    "darkblue": {
+      "aliases": ["blue"],
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Blue/activate"
+    },
+    "darkgreen": {
+      "aliases": ["green"],
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Green/activate"
+    },
+    "darkorange": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Orange/activate"
+    },
+    "darkred": {
+      "aliases": ["red"],
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Red/activate"
+    },
+    "darkyellow": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Yellow/activate"
+    },
+    "black": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Default/activate"
+    },
+    "gray": {
+      "aliases": ["grey"],
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Gray/activate"
+    },
+    "orange": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Orange/activate"
+    },
+    "pink": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Pink/activate"
+    },
+    "purple": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Purple/activate"
+    },
+    "teal": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Teal/activate"
+    },
+    "yellow": {
+      "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Yellow/activate"
+    },
+    "perf": {
+      "aliases": ["pk"],
+      "fscommand": {
+        "command": "browser",
+        "query": "http://127.0.0.1:9999/PerfKnobManager/set"
+      }
+    },
+    "leaverace": {
+      "aliases": ["lr", "l"],
+      "scripthook": "/mainMenu/This Place/Leave Race/activate"
+    },
+    "joinrace": {
+      "aliases": ["join", "race"],
+      "scripthook": "/mainMenu/This Place/Join Race/activate"
+    },
+    "results": {
+      "aliases": ["rr"],
+      "scripthook": "/mainMenu/This Place/Race Results/activate"
+    },
+    "gate": {
+      "scripthook": "/mainMenu/This Place/My Gear/Gates/Gate/Take One Out/activate"
+    },
+    "ramp": {
+      "scripthook": "/mainMenu/This Place/My Gear/Gates/Ramp Gate/Take One Out/activate"
+    },
+    "grandstand": {
+      "aliases": ["gs"],
+      "scripthook": "/mainMenu/This Place/My Gear/Gates/Grandstand/Take One Out/activate"
+    },
+    "startgate": {
+      "aliases": ["sg"],
+      "scripthook": "/mainMenu/This Place/My Gear/Gates/Start Gate/Take One Out/activate"
+    },
+    "finishgate": {
+      "aliases": ["fg"],
+      "scripthook": "/mainMenu/This Place/My Gear/Gates/Finish Gate/Take One Out/activate"
+    },
+    "barrel": {
+      "scripthook": "/mainMenu/This Place/My Gear/Obstacles/Barrel/Take One Out/activate"
+    },
+    "crate": {
+      "scripthook": "/mainMenu/This Place/My Gear/Obstacles/Crate/Take One Out/activate"
+    },
+    "record": {
+      "scripthook": "/mainMenu/This Place/Course/Record/activate"
+    },
+    "arcade": {
+      "scripthook": "/mainMenu/This Place/Arcade Mode/Start/activate"
+    },
+    "voicetrainer": {
+      "aliases": ["vt"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/VoiceTrainer/Trainer.html"
+      }
+    },
+    "commercehistory": {
+      "aliases": ["th", "thist"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/commercehistory/commercehistory"
+      }
+    },
+    "events": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/eventmgmt/myevents?show=attend"
+      }
+    },
+    "happening": {
+      "aliases": ["hn", "now"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/eventmgmt/eventmgmt?op=search2&HappeningNow=1&minPop=1"
+      }
+    },
+    "tbux": {
+      "aliases": ["tb"],
+      "scripthook": "/mainMenu/Shop/Buy More Therebucks/activate"
+    },
+    "avsearch": {
+      "aliases": ["avatar"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/profiles/people-search.xml"
+      },
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/listings/listings?Type=12&Filter=12&PageSize=20&Stylesheet=/profiles/people-search-results.xsl&t_AvatarName_1=S&o_AvatarName_1=LIKE&v_AvatarName_1=$1"
+          }
+        }
+      }
+    },
+    "goto": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/places/places?count=100"
+      }
+    },
+    "places": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/places/places?count=100"
+      }
+    },
+    "profile": {
+      "aliases": ["pf"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/profiles/profiles?op=edit"
+      },
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$1"
+          }
+        }
+      }
+    },
+    "xsl": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/profiles/profiles?op=edit&omitXsl=1"
+      },
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$1&omitXsl=1"
+          }
+        }
+      }
+    },
+    "seller": {
+      "aliases": ["sales"],
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$1"
+          }
+        }
+      }
+    },
+    "designer": {
+      "aliases": ["designs"],
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$1"
+          }
+        }
+      }
+    },
+    "bids": {
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/bidhistory?ItemId=$1"
+          }
+        }
+      }
+    },
+    "auctions": {
+      "aliases": ["auction", "ac"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/items/home"
+      }
+    },
+    "completed": {
+      "aliases": ["compl"],
+      "arguments": {
+        "1": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/fulltextsearch?completed=yes&Fulltext=$encode($+)"
+          }
+        }
+      }
+    },
+    "myitems": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/items/myitems"
+      }
+    },
+    "shop": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/catalog/"
+      }
+    },
+    "dev": {
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/developers/developer_home.xml"
+      }
+    },
+    "review": {
+      "aliases": ["reviews", "r"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/wsgi-scripts/review.py/reviewables"
+      }
+    },
+    "forum": {
+      "aliases": ["forums"],
+      "scripthook": "/mainMenu/People/Forums/activate"
+    },
+    "blog": {
+      "aliases": ["blogs"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://blog.there.com/"
+      }
+    },
+    "status": {
+      "aliases": ["avman"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/status/avman.xml"
+      }
+    },
+    "map": {
+      "guicommand": "map"
+    }
+  }
+}
