@@ -1,4 +1,131 @@
+class ListenerArgProcessor {
+  constructor(args) {
+    let self = this;
+    self.args = args;
+    self.joinedArgs = args.join(' ');
+  }
+
+  async apply(data) {
+    let self = this;
+    if (self.args.length > 0 && data != undefined) {
+      switch (data.constructor.name) {
+        case 'String': {
+          data = self.fill(data);
+          break;
+        }
+        case 'Array': {
+          let entries = data;
+          data = [];
+          for (let entry of entries) {
+            data.push(await self.apply(entry));
+          }
+          break;
+        }
+        case 'Object': {
+          let entries = data;
+          data = {};
+          for (let key in entries) {
+            data[key] = await self.apply(entries[key]);
+          }
+          break;
+        }
+      }
+    }
+    return data;
+  }
+
+  async fill(text) {
+    let self = this;
+    let index = text.indexOf('$');
+    if (index < 0) {
+      return text;
+    }
+    let hint = text.slice(index + 1);
+    text = text.slice(0, index);
+    if (hint.length == 0) {
+      return text;
+    }
+    if (hint[0] == '$') {
+      text += '$';
+      text += await self.fill(hint.slice(1));
+      return text;
+    }
+    if (hint[0] == '+') {
+      text += self.joinedArgs;
+      text += await self.fill(hint.slice(1));
+      return text;
+    }
+    for (let i = 0; i < 9; i++) {
+      if (hint[0] == String(i + 1)) {
+        if (i < self.args.length) {
+          text += self.args[i];
+        }
+        text += await self.fill(hint.slice(1));
+        return text;
+      }
+    }
+    index = hint.indexOf('(');
+    if (index < 0) {
+      return text;
+    }
+    let rest = await self.fill(hint.slice(index + 1));
+    hint = hint.slice(0, index);
+    index = rest.indexOf(')');
+    if (index < 0) {
+      return text;
+    }
+    let inner = rest.slice(0, index);
+    rest = rest.slice(index + 1);
+    switch (hint) {
+      case 'var': {
+        inner = inner.toLowerCase();
+        text += (There.variables[inner] ?? '');
+        break;
+      }
+      case 'encode': {
+        text += encodeURIComponent(inner);
+        break;
+      }
+      case 'nametodoid': {
+        inner = inner.toLowerCase();
+        if (!There.data.avatars.doids.hasOwnProperty(inner)) {
+          await There.fetchAsync({
+            path: '/AvPro/nametodoid',
+            query: {
+              avatarname: inner,
+              homedoid: There.variables.there_pilotdoid,
+            },
+            dataType: 'xml',
+            success: function(xml) {
+              const xmlAnswer = xml.getElementsByTagName('Answer')[0];
+              const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
+              if (xmlResult.childNodes[0].nodeValue != 1) {
+                return;
+              }
+              const doid = Number(xmlAnswer.getElementsByTagName('AvatarDoid')[0].childNodes[0].nodeValue);
+              const name = xmlAnswer.getElementsByTagName('AvatarName')[0].childNodes[0].nodeValue;
+              There.data.avatars.doids[name.toLowerCase()] = doid;
+              There.data.avatars.names[doid] = name;
+            },
+          });
+        }
+        text += (There.data.avatars.doids[inner] ?? '');
+        break;
+      }
+    }
+    text += rest;
+    return text;
+  }
+}
+
 There.init({
+  data: {
+    avatars: {
+      doids: {},
+      names: {},
+    },
+  },
+
   onReady: function() {
     There.fsCommand('setStageWidthHeight', {
       width: Number(There.variables.there_windowwidth ?? 800),
@@ -53,7 +180,7 @@ There.init({
 
   onPilotXml: function(xml) {
     const xmlAnswer = xml.getElementsByTagName('Answer')[0];
-    const doid = xmlAnswer.getElementsByTagName('PilotDoid')[0].childNodes[0].nodeValue;
+    const doid = Number(xmlAnswer.getElementsByTagName('PilotDoid')[0].childNodes[0].nodeValue);
     const name = xmlAnswer.getElementsByTagName('PilotName')[0].childNodes[0].nodeValue;
     if (doid == There.variables.there_pilotdoid) {
       There.variables.there_pilotname = name;
@@ -135,7 +262,7 @@ There.init({
     }
   },
 
-  handleListenerCommand: function(command, args) {
+  handleListenerCommand: async function(command, args) {
     let entry = There.data.config.commands[command];
     if (entry == undefined) {
       return;
@@ -144,19 +271,20 @@ There.init({
       if (entry.arguments == undefined) {
         return;
       }
-      if (args.length in entry.arguments) {
+      if (entry.arguments.hasOwnProperty(args.length)) {
         entry = entry.arguments[args.length];
-      } else if ('+' in entry.arguments) {
+      } else if (entry.arguments.hasOwnProperty('+')) {
         entry = entry.arguments['+'];
       } else {
         return;
       }
     }
+    let processor = new ListenerArgProcessor(args);
     if (entry.fscommand != undefined) {
-      There.fsCommand(entry.fscommand.command, There.applyListenerArgs(entry.fscommand.query, args));
+      There.fsCommand(entry.fscommand.command, await processor.apply(entry.fscommand.query));
     }
     if (entry.guicommand != undefined) {
-      There.guiCommand(entry.guicommand);
+      There.guiCommand(await processor.apply(entry.guicommand));
     }
     if (entry.scripthook != undefined) {
       let query = {
@@ -168,11 +296,18 @@ There.init({
         dataType: 'xml',
       });
     }
+    if (entry.fetch != undefined) {
+      There.fetch({
+        path: entry.fetch.path,
+        query: await processor.apply(entry.fetch.query ?? {}),
+        dataType: 'xml',
+      });
+    }
     if (entry.environment != undefined) {
       for (let variable of entry.environment) {
         let query = {
-          variable: There.applyListenerArgs(variable.key, args),
-          value: There.applyListenerArgs(variable.value, args),
+          variable: await processor.apply(variable.key),
+          value: await processor.apply(variable.value),
           modify: '',
         };
         There.fetch({
@@ -183,40 +318,4 @@ There.init({
       }
     }
   },
-
-  applyListenerArgs: function(data, args, joined) {
-    if (joined == undefined) {
-      joined = args.join(' ');
-    }
-    if (args.length > 0 && data != undefined) {
-      switch (data.constructor.name) {
-        case 'String': {
-          if (data.includes('$')) {
-            for (let i = 0; i < args.length; i++) {
-              data = data.replace(`$${i + 1}`, args[i]);
-            }
-            data = data.replace('$+', joined);
-          }
-          break;
-        }
-        case 'Array': {
-          entries = data;
-          data = [];
-          for (let entry of entries) {
-            data.push(There.applyListenerArgs(entry, args, joined));
-          }
-          break;
-        }
-        case 'Object': {
-          entries = data;
-          data = {};
-          for (let key in entries) {
-            data[key] = There.applyListenerArgs(entries[key], args, joined);
-          }
-          break;
-        }
-      }
-    }
-    return data;
-  }
 });

@@ -182,11 +182,27 @@
       "scripthook": "/mainMenu/Places/Undo Last Teleport/activate"
     },
     "im": {
-      "scripthook": "/mainMenu/People/IM/activate"
+      "scripthook": "/mainMenu/People/IM/activate",
+      "arguments": {
+        "1": {
+          "guicommand": {
+            "action": "im",
+            "av": "$nametodoid($1)"
+          }
+        }
+      }
     },
     "summon": {
       "aliases": ["sm", "get"],
-      "scripthook": "/mainMenu/People/Summon/activate"
+      "scripthook": "/mainMenu/People/Summon/activate",
+      "arguments": {
+        "1": {
+          "guicommand": {
+            "action": "summon",
+            "av": "$nametodoid($1)"
+          }
+        }
+      }
     },
     "ignore": {
       "scripthook": "/mainMenu/People/Ignore/Ignore Someone/activate"
@@ -322,11 +338,46 @@
     "yellow": {
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Yellow/activate"
     },
+    "viewscale": {
+      "aliases": ["vs"],
+      "arguments": {
+        "1": {
+          "fetch": {
+            "path": "/PerfKnobManager/set",
+            "query": {
+              "viewScale": "$1"
+            }
+          }
+        }
+      }
+    },
+    "lod": {
+      "arguments": {
+        "1": {
+          "fetch": {
+            "path": "/PerfKnobManager/set",
+            "query": {
+              "skuteLodDistanceDelta": "$1"
+            }
+          }
+        }
+      }
+    },
     "perf": {
       "aliases": ["pk"],
       "fscommand": {
         "command": "browser",
         "query": "http://127.0.0.1:9999/PerfKnobManager/set"
+      },
+      "arguments": {
+        "2": {
+          "fetch": {
+            "path": "/PerfKnobManager/set",
+            "query": {
+              "$1": "$2"
+            }
+          }
+        }
       }
     },
     "leaverace": {
@@ -412,7 +463,7 @@
         "1": {
           "fscommand": {
             "command": "browser",
-            "query": "https://webapps.prod.there.com/listings/listings?Type=12&Filter=12&PageSize=20&Stylesheet=/profiles/people-search-results.xsl&t_AvatarName_1=S&o_AvatarName_1=LIKE&v_AvatarName_1=$1"
+            "query": "https://webapps.prod.there.com/listings/listings?Type=12&Filter=12&PageSize=20&Stylesheet=/profiles/people-search-results.xsl&t_AvatarName_1=S&o_AvatarName_1=LIKE&v_AvatarName_1=$encode($1)"
           }
         }
       }
@@ -439,7 +490,7 @@
         "1": {
           "fscommand": {
             "command": "browser",
-            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$1"
+            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$encode($1)"
           }
         }
       }
@@ -453,29 +504,37 @@
         "1": {
           "fscommand": {
             "command": "browser",
-            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$1&omitXsl=1"
+            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$encode($1)&omitXsl=1"
           }
         }
       }
     },
     "seller": {
       "aliases": ["sales"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($var(there_pilotname))"
+      },
       "arguments": {
         "1": {
           "fscommand": {
             "command": "browser",
-            "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$1"
+            "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($1)"
           }
         }
       }
     },
     "designer": {
       "aliases": ["designs"],
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($var(there_pilotname))"
+      },
       "arguments": {
         "1": {
           "fscommand": {
             "command": "browser",
-            "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$1"
+            "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($1)"
           }
         }
       }
@@ -485,7 +544,7 @@
         "1": {
           "fscommand": {
             "command": "browser",
-            "query": "https://webapps.prod.there.com/items/bidhistory?ItemId=$1"
+            "query": "https://webapps.prod.there.com/items/bidhistory?ItemId=$encode($1)"
           }
         }
       }
