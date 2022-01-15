@@ -7,28 +7,26 @@ class ListenerArgProcessor {
 
   async apply(data) {
     let self = this;
-    if (self.args.length > 0 && data != undefined) {
-      switch (data.constructor.name) {
-        case 'String': {
-          data = self.fill(data);
-          break;
+    switch (data?.constructor.name) {
+      case 'String': {
+        data = await self.fill(data);
+        break;
+      }
+      case 'Array': {
+        let entries = data;
+        data = [];
+        for (let entry of entries) {
+          data.push(await self.apply(entry));
         }
-        case 'Array': {
-          let entries = data;
-          data = [];
-          for (let entry of entries) {
-            data.push(await self.apply(entry));
-          }
-          break;
+        break;
+      }
+      case 'Object': {
+        let entries = data;
+        data = {};
+        for (let key in entries) {
+          data[key] = await self.apply(entries[key]);
         }
-        case 'Object': {
-          let entries = data;
-          data = {};
-          for (let key in entries) {
-            data[key] = await self.apply(entries[key]);
-          }
-          break;
-        }
+        break;
       }
     }
     return data;
@@ -79,7 +77,10 @@ class ListenerArgProcessor {
     switch (hint) {
       case 'var': {
         inner = inner.toLowerCase();
-        text += (There.variables[inner] ?? '');
+        if (!There.variables.hasOwnProperty(inner)) {
+          throw `Variable not found: ${inner}`;
+        }
+        text += There.variables[inner];
         break;
       }
       case 'encode': {
@@ -109,8 +110,14 @@ class ListenerArgProcessor {
             },
           });
         }
-        text += (There.data.avatars.doids[inner] ?? '');
+        if (!There.data.avatars.doids.hasOwnProperty(inner)) {
+          throw `Avatar not found: ${inner}`;
+        }
+        text += There.data.avatars.doids[inner];
         break;
+      }
+      default: {
+        throw `Hint not found: ${hint}`;
       }
     }
     text += rest;
@@ -246,7 +253,7 @@ There.init({
             text += xmlChild.nodeValue;
           } else if (xmlChild.tagName == 'URL') {
             let url = xmlChild.childNodes[0].nodeValue;
-            There.data.url = url;
+            There.variables.there_lasturl = url;
             text += url;
           }
         }
@@ -255,7 +262,9 @@ There.init({
           let args = text.split(' ');
           let command = args.shift().slice(1).toLowerCase();
           if (command != '') {
-            There.handleListenerCommand(command, args);
+            There.handleListenerCommand(command, args).catch(function(error) {
+              console.log(error);
+            });
           }
         }
       }
@@ -267,6 +276,7 @@ There.init({
     if (entry == undefined) {
       return;
     }
+    let processor = new ListenerArgProcessor(args);
     if (args.length > 0) {
       if (entry.arguments == undefined) {
         return;
@@ -278,8 +288,21 @@ There.init({
       } else {
         return;
       }
+      if (entry.constructor.name == 'Array') {
+        entry = entry.find(function(element) {
+          if (entry.match == undefined) {
+            return true;
+          }
+          if (processor.joinedArgs.match(entry.match) != null) {
+            return true;
+          }
+          return false;
+        });
+      }
     }
-    let processor = new ListenerArgProcessor(args);
+    if (entry == undefined) {
+      return;
+    }
     if (entry.fscommand != undefined) {
       There.fsCommand(entry.fscommand.command, await processor.apply(entry.fscommand.query));
     }

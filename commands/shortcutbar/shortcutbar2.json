@@ -472,6 +472,26 @@
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/places/places?count=100"
+      },
+      "arguments": {
+        "1": [{
+          "match": "^[0-9]+$",
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/goto/goto?obj=$encode($1)"
+          }
+        }, {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/goto/goto?placename=$encode($1)"
+          }
+        }],
+        "+": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/goto/goto?placename=$encode($+)"
+          }
+        }
       }
     },
     "places": {
@@ -554,6 +574,26 @@
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/items/home"
+      },
+      "arguments": {
+        "1": [{
+          "match": "^[0-9]+$",
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/view?ItemId=$encode($1)"
+          }
+        }, {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/fulltextsearch?Fulltext=$encode($1)"
+          }
+        }],
+        "+": {
+          "fscommand": {
+            "command": "browser",
+            "query": "https://webapps.prod.there.com/items/fulltextsearch?Fulltext=$encode($+)"
+          }
+        }
       }
     },
     "completed": {
@@ -612,6 +652,24 @@
     },
     "map": {
       "guicommand": "map"
+    },
+    "url": {
+      "fscommand": {
+        "command": "browser",
+        "query": "$var(there_lasturl)"
+      }
+    },
+    "chathistory": {
+      "aliases": ["log", "ch"],
+      "scripthook": "/mainMenu/People/Show Chat History/activate"
+    },
+    "photo": {
+      "aliases": ["pic"],
+      "scripthook": "/mainMenu/There/ThereCam/Take Photo Now/activate"
+    },
+    "compass": {
+      "aliases": ["c", "minimap"],
+      "scripthook": "/mainMenu/Places/Compass/activate"
     }
   }
 }
