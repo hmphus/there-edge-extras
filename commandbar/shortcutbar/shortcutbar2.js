@@ -327,7 +327,8 @@ There.init({
       });
     }
     if (entry.environment != undefined) {
-      for (let variable of entry.environment) {
+      let environment = entry.environment.constructor.name == 'Object' ? [entry.environment] : entry.environment;
+      for (let variable of environment) {
         let query = {
           variable: await processor.apply(variable.key),
           value: await processor.apply(variable.value),

@@ -9,8 +9,15 @@ import json
 if __name__ == '__main__':
     with open('shortcutbar/shortcutbar2.json') as file:
         config = json.loads(file.read())
+    entries = []
     for command, entry in config['commands'].items():
         aliases = entry.get('aliases', [])
         commands = [command] + aliases
-        print(' '.join(['/%s' % c for c in commands]))
+        entries.append([
+            ' '.join(['/%s' % c for c in commands]),
+            entry.get('help', ''),
+        ])
+    size = max([len(e[0]) for e in entries])
+    for entry in sorted(entries, key=lambda e: e[0]):
+        print('%-*s  %s' % (size, entry[0], entry[1]))
         

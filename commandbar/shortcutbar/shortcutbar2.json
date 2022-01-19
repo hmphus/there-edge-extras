@@ -2,79 +2,96 @@
   "commands": {
     "actionmode": {
       "aliases": ["am"],
+      "help": "Switch to Action Mode",
       "scripthook": "/mainMenu/There/Customize/World/Default to Action Mode/activate"
     },
     "logout": {
       "aliases": ["bye"],
+      "help": "Log out of There (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/There/Logout/activate"
     },
     "exit": {
+      "help": "Exit There (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/There/Exit/activate"
     },
     "settings": {
+      "help": "Open settings",
       "scripthook": "/mainMenu/There/Settings/activate"
     },
     "volume": {
       "aliases": ["vol"],
+      "help": "Open volume control (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/There/Customize/World/Volume/activate"
     },
     "chatgroup": {
       "aliases": ["aj"],
+      "help": "Toggle Auto-Join Chat Groups (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/There/Customize/World/Auto-Join Chat Groups/activate"
     },
     "alltags": {
       "aliases": ["tags", "allnames", "names"],
+      "help": "Show all visible nametags",
       "scripthook": "/mainMenu/There/Customize/World/Nametags/Show all visible/activate"
     },
     "neartags": {
       "aliases": ["nearnames"],
+      "help": "Show all nearby nametags",
       "scripthook": "/mainMenu/There/Customize/World/Nametags/Show all near/activate"
     },
     "nearesttags": {
       "aliases": ["nearestnames"],
+      "help": "Show 10 nearest nametags",
       "scripthook": "/mainMenu/There/Customize/World/Nametags/Show 10 nearest/activate"
     },
     "notags": {
       "aliases": ["nonames"],
+      "help": "Hide all nametags",
       "scripthook": "/mainMenu/There/Customize/World/Nametags/Show none/activate"
     },
     "labels": {
-      "environment": [{
+      "help": "Show object labels",
+      "environment": {
         "key": "showObjectLabels",
         "value": "1"
-      }]
+      }
     },
     "nolabels": {
-      "environment": [{
+      "help": "Hide object labels",
+      "environment": {
         "key": "showObjectLabels",
         "value": "0"
-      }]
+      }
     },
     "speech": {
-      "environment": [{
+      "help": "Show speech waveform",
+      "environment": {
         "key": "hideSpeech",
         "value": "0"
-      }]
+      }
     },
     "nospeech": {
-      "environment": [{
+      "help": "Hide speech waveform",
+      "environment": {
         "key": "hideSpeech",
         "value": "1"
-      }]
+      }
     },
     "fps": {
-      "environment": [{
+      "help": "Show FPS and PPS hud",
+      "environment": {
         "key": "flipHud",
         "value": "1"
-      }]
+      }
     },
     "nofps": {
-      "environment": [{
+      "help": "Hide FPS and PPS hud",
+      "environment": {
         "key": "flipHud",
         "value": "0"
-      }]
+      }
     },
     "web": {
+      "help": "Open the client browser",
       "guicommand": "browse",
       "arguments": {
         "+": {
@@ -86,57 +103,67 @@
       }
     },
     "cam": {
-      "environment": [{
+      "help": "Toggle UserCam+",
+      "environment": {
         "key": "flipCamera",
         "value": "1"
-      }]
+      }
     },
     "show": {
-      "environment": [{
+      "help": "Show huds",
+      "environment": {
         "key": "noRenderHud",
         "value": "0"
-      }]
+      }
     },
     "hide": {
-      "environment": [{
+      "help": "Hide huds",
+      "environment": {
         "key": "noRenderHud",
         "value": "1"
-      }]
+      }
     },
     "zones": {
-      "environment": [{
+      "help": "Show zone boundaries",
+      "environment": {
         "key": "showOtherZones",
         "value": "1"
-      }]
+      }
     },
     "nozones": {
-      "environment": [{
+      "help": "Hide zone boundaries",
+      "environment": {
         "key": "showOtherZones",
         "value": "0"
-      }]
+      }
     },
     "colview": {
-      "environment": [{
+      "help": "Show collisions",
+      "environment": {
         "key": "colView",
         "value": "1"
-      }]
+      }
     },
     "nocolview": {
-      "environment": [{
+      "help": "Hide collisions",
+      "environment": {
         "key": "colView",
         "value": "0"
-      }]
+      }
     },
     "changeme": {
       "aliases": ["cm", "wear"],
+      "help": "Open ChangeMe",
       "scripthook": "/mainMenu/My Things/ChangeMe/activate"
     },
     "communicator": {
       "aliases": ["com"],
+      "help": "Open Communicator",
       "guicommand": "communicator"
     },
     "forcefield": {
       "aliases": ["ff", "f"],
+      "help": "Toggle forcefield",
       "guicommand": {
         "action": "forcefield",
         "toggle": "1"
@@ -144,12 +171,14 @@
     },
     "cruisecontrol": {
       "aliases": ["cc"],
+      "help": "Toggle cruise control",
       "guicommand": {
         "action": "togglepreference",
         "pref": "CruiseControl"
       }
     },
     "mute": {
+      "help": "Mute audio",
       "guicommand": {
         "action": "setpreference",
         "pref": "MuteAllSound",
@@ -157,6 +186,7 @@
       }
     },
     "unmute": {
+      "help": "Unmute audio",
       "guicommand": {
         "action": "setpreference",
         "pref": "MuteAllSound",
@@ -165,6 +195,7 @@
     },
     "handsfree": {
       "aliases": ["hf"],
+      "help": "Toggle hands free",
       "guicommand": {
         "action": "voiceTalk",
         "toggle": "1"
@@ -172,6 +203,7 @@
     },
     "voice": {
       "aliases": ["v"],
+      "help": "Toggle voice chat",
       "guicommand": {
         "action": "togglepreference",
         "pref": "VoiceToggle"
@@ -179,9 +211,11 @@
     },
     "undo": {
       "aliases": ["goback"],
+      "help": "Undo last teleport",
       "scripthook": "/mainMenu/Places/Undo Last Teleport/activate"
     },
     "im": {
+      "help": "Open IM dialog",
       "scripthook": "/mainMenu/People/IM/activate",
       "arguments": {
         "1": {
@@ -194,6 +228,7 @@
     },
     "summon": {
       "aliases": ["sm", "get"],
+      "help": "Open summon dialog",
       "scripthook": "/mainMenu/People/Summon/activate",
       "arguments": {
         "1": {
@@ -205,141 +240,178 @@
       }
     },
     "ignore": {
+      "help": "Open ignore dialog",
       "scripthook": "/mainMenu/People/Ignore/Ignore Someone/activate"
     },
     "organize": {
       "aliases": ["o"],
+      "help": "Open Organizer",
       "scripthook": "/mainMenu/My Things/Organize.../activate"
     },
     "favorite": {
       "aliases": ["add"],
+      "help": "Add favorite place",
       "scripthook": "/mainMenu/Places/Add Favorite.../activate"
     },
     "actionbar": {
       "aliases": ["ab"],
+      "help": "Display ActionBar",
       "scripthook": "/mainMenu/People/Action Bar/activate"
     },
     "local": {
       "aliases": ["debug"],
+      "help": "Open system cockpit page",
       "fscommand": {
         "command": "browser",
         "query": "http://127.0.0.1:9999/"
       }
     },
     "var": {
+      "help": "Set environment variable",
       "arguments": {
         "2": {
-          "environment": [{
+          "environment": {
             "key": "$1",
             "value": "$2"
-          }]
+          }
         }
       }
     },
     "worldchat": {
       "aliases": ["wc"],
+      "help": "Open world chat",
       "scripthook": "/mainMenu/People/Show World Chat/activate"
     },
     "activity": {
       "aliases": ["flag"],
+      "help": "List an activity",
       "scripthook": "/mainMenu/Activities/List Activity/activate"
     },
     "weather": {
+      "help": "Toggle weather",
       "scripthook": "/mainMenu/There/Customize/World/Weather On/activate"
     },
     "music": {
+      "help": "Toggle music",
       "scripthook": "/mainMenu/There/Customize/World/Music Playing/activate"
     },
     "standard": {
       "aliases": ["0"],
+      "help": "Use standard view",
       "scripthook": "/mainMenu/Views/Standard View/activate"
     },
     "low": {
       "aliases": ["1"],
+      "help": "Use low zoom view",
       "scripthook": "/mainMenu/Views/Aerial View/Low Zoom/activate"
     },
     "medium": {
       "aliases": ["2"],
+      "help": "Use medium zoom view",
       "scripthook": "/mainMenu/Views/Aerial View/Medium Zoom/activate"
     },
     "high": {
       "aliases": ["3"],
+      "help": "Use high zoom view",
       "scripthook": "/mainMenu/Views/Aerial View/High Zoom/activate"
     },
     "super": {
       "aliases": ["4"],
+      "help": "Use super zoom view",
       "scripthook": "/mainMenu/Views/Aerial View/Super Zoom/activate"
     },
     "world": {
       "aliases": ["5"],
+      "help": "Use world zoom view",
       "scripthook": "/mainMenu/Views/Aerial View/World Zoom/activate"
     },
     "body": {
+      "help": "Use body mirror view",
       "scripthook": "/mainMenu/Views/Body Mirror/activate"
     },
     "face": {
+      "help": "Use face mirror view",
       "scripthook": "/mainMenu/Views/Face Mirror/activate"
     },
     "first": {
+      "help": "Use first person view",
       "scripthook": "/mainMenu/Views/First Person/activate"
     },
     "brightblue": {
+      "help": "Use bright blue text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Bright Blue/activate"
     },
     "brightgreen": {
+      "help": "Use bright green text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Bright Green/activate"
     },
     "brightred": {
+      "help": "Use bright red text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Bright Red/activate"
     },
     "brown": {
+      "help": "Use brown text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Brown/activate"
     },
     "burgundy": {
+      "help": "Use burgundy text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Burgundy/activate"
     },
     "darkblue": {
       "aliases": ["blue"],
+      "help": "Use dark blue text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Blue/activate"
     },
     "darkgreen": {
       "aliases": ["green"],
+      "help": "Use dark green text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Green/activate"
     },
     "darkorange": {
+      "help": "Use dark orange text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Orange/activate"
     },
     "darkred": {
       "aliases": ["red"],
+      "help": "Use dark red text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Red/activate"
     },
     "darkyellow": {
+      "help": "Use dark yellow text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Dark Yellow/activate"
     },
     "black": {
+      "help": "Use default text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Default/activate"
     },
     "gray": {
       "aliases": ["grey"],
+      "help": "Use grey text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Gray/activate"
     },
     "orange": {
+      "help": "Use orange text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Orange/activate"
     },
     "pink": {
+      "help": "Use pink text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Pink/activate"
     },
     "purple": {
+      "help": "Use purple text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Purple/activate"
     },
     "teal": {
+      "help": "Use teal text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Teal/activate"
     },
     "yellow": {
+      "help": "Use yellow text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Yellow/activate"
     },
     "viewscale": {
       "aliases": ["vs"],
+      "help": "Adjust view scale",
       "arguments": {
         "1": {
           "fetch": {
@@ -352,6 +424,7 @@
       }
     },
     "lod": {
+      "help": "Adjust LOD distance delta",
       "arguments": {
         "1": {
           "fetch": {
@@ -365,6 +438,7 @@
     },
     "perf": {
       "aliases": ["pk"],
+      "help": "Open performance knob manager page",
       "fscommand": {
         "command": "browser",
         "query": "http://127.0.0.1:9999/PerfKnobManager/set"
@@ -382,48 +456,61 @@
     },
     "leaverace": {
       "aliases": ["lr", "l"],
+      "help": "Leave the current race",
       "scripthook": "/mainMenu/This Place/Leave Race/activate"
     },
     "joinrace": {
       "aliases": ["join", "race"],
+      "help": "Join the current race (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/Join Race/activate"
     },
     "results": {
       "aliases": ["rr"],
+      "help": "Open race results (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/Race Results/activate"
     },
     "gate": {
+      "help": "Take out a gate while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Gates/Gate/Take One Out/activate"
     },
     "ramp": {
+      "help": "Take out a ramp gate while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Gates/Ramp Gate/Take One Out/activate"
     },
     "grandstand": {
       "aliases": ["gs"],
+      "help": "Take out a grandstand gate while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Gates/Grandstand/Take One Out/activate"
     },
     "startgate": {
       "aliases": ["sg"],
+      "help": "Take out a start gate while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Gates/Start Gate/Take One Out/activate"
     },
     "finishgate": {
       "aliases": ["fg"],
+      "help": "Take out a finish gate while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Gates/Finish Gate/Take One Out/activate"
     },
     "barrel": {
+      "help": "Take out a barrel while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Obstacles/Barrel/Take One Out/activate"
     },
     "crate": {
+      "help": "Take out a crate while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/My Gear/Obstacles/Crate/Take One Out/activate"
     },
     "record": {
+      "help": "Record while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/Course/Record/activate"
     },
     "arcade": {
+      "help": "Turn on arcade mode while track building (Does not work while in Action Mode)",
       "scripthook": "/mainMenu/This Place/Arcade Mode/Start/activate"
     },
     "voicetrainer": {
       "aliases": ["vt"],
+      "help": "Open voice trainer page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/VoiceTrainer/Trainer.html"
@@ -431,12 +518,14 @@
     },
     "commercehistory": {
       "aliases": ["th", "thist"],
+      "help": "Open transaction history page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/commercehistory/commercehistory"
       }
     },
     "events": {
+      "help": "Open event schedule page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/eventmgmt/myevents?show=attend"
@@ -444,6 +533,7 @@
     },
     "happening": {
       "aliases": ["hn", "now"],
+      "help": "Open Happening Now page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/eventmgmt/eventmgmt?op=search2&HappeningNow=1&minPop=1"
@@ -451,10 +541,12 @@
     },
     "tbux": {
       "aliases": ["tb"],
+      "help": "Open Therebucks purchase page",
       "scripthook": "/mainMenu/Shop/Buy More Therebucks/activate"
     },
     "avsearch": {
       "aliases": ["avatar"],
+      "help": "Open avatar search page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/profiles/people-search.xml"
@@ -469,6 +561,7 @@
       }
     },
     "goto": {
+      "help": "Open real estate page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/places/places?count=100"
@@ -495,6 +588,7 @@
       }
     },
     "places": {
+      "help": "Open real estate page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/places/places?count=100"
@@ -502,6 +596,7 @@
     },
     "profile": {
       "aliases": ["pf"],
+      "help": "Open profile page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/profiles/profiles?op=edit"
@@ -516,6 +611,7 @@
       }
     },
     "xsl": {
+      "help": "Open profile page without stylesheet",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/profiles/profiles?op=edit&omitXsl=1"
@@ -531,6 +627,7 @@
     },
     "seller": {
       "aliases": ["sales"],
+      "help": "Open sales page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($var(there_pilotname))"
@@ -546,6 +643,7 @@
     },
     "designer": {
       "aliases": ["designs"],
+      "help": "Open developer auctions page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($var(there_pilotname))"
@@ -560,6 +658,7 @@
       }
     },
     "bids": {
+      "help": "Open bid history page",
       "arguments": {
         "1": {
           "fscommand": {
@@ -571,6 +670,7 @@
     },
     "auctions": {
       "aliases": ["auction", "ac"],
+      "help": "Open auctions page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/items/home"
@@ -598,6 +698,7 @@
     },
     "completed": {
       "aliases": ["compl"],
+      "help": "Open completed auctions page",
       "arguments": {
         "1": {
           "fscommand": {
@@ -608,18 +709,21 @@
       }
     },
     "myitems": {
+      "help": "Open auction items page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/items/myitems"
       }
     },
     "shop": {
+      "help": "Open Shop Central page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/catalog/"
       }
     },
     "dev": {
+      "help": "Open developer home page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/developers/developer_home.xml"
@@ -627,6 +731,7 @@
     },
     "review": {
       "aliases": ["reviews", "r"],
+      "help": "Open developer reviews page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/wsgi-scripts/review.py/reviewables"
@@ -634,10 +739,12 @@
     },
     "forum": {
       "aliases": ["forums"],
+      "help": "Open member fan sites page",
       "scripthook": "/mainMenu/People/Forums/activate"
     },
     "blog": {
       "aliases": ["blogs"],
+      "help": "Open blog page",
       "fscommand": {
         "command": "browser",
         "query": "https://blog.there.com/"
@@ -645,15 +752,18 @@
     },
     "status": {
       "aliases": ["avman"],
+      "help": "Open avman status page",
       "fscommand": {
         "command": "browser",
         "query": "https://webapps.prod.there.com/status/avman.xml"
       }
     },
     "map": {
+      "help": "Open map",
       "guicommand": "map"
     },
     "url": {
+      "help": "Open the last URL typed in chat by anyone",
       "fscommand": {
         "command": "browser",
         "query": "$var(there_lasturl)"
@@ -661,14 +771,17 @@
     },
     "chathistory": {
       "aliases": ["log", "ch"],
+      "help": "Open chat history",
       "scripthook": "/mainMenu/People/Show Chat History/activate"
     },
     "photo": {
       "aliases": ["pic"],
+      "help": "Take photo",
       "scripthook": "/mainMenu/There/ThereCam/Take Photo Now/activate"
     },
     "compass": {
       "aliases": ["c", "minimap"],
+      "help": "Open compass or minimap",
       "scripthook": "/mainMenu/Places/Compass/activate"
     }
   }
