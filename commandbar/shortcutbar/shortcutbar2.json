@@ -783,6 +783,49 @@
       "aliases": ["c", "minimap"],
       "help": "Open compass or minimap",
       "scripthook": "/mainMenu/Places/Compass/activate"
+    },
+    "home": {
+      "help": "Teleport to your home location",
+      "fscommand": {
+        "command": "browser",
+        "query": "https://webapps.prod.there.com/goto/goto?obj=$encode($storage(home))"
+      },
+      "arguments": {
+        "1": [{
+          "match": "^[0-9]+$",
+          "storage": {
+            "key": "home",
+            "value": "$1"
+          }
+        }]
+      }
+    },
+    "time": {
+      "aliases": ["t", "tt"],
+      "help": "Say the current time",
+      "chat": "$time(%I:%0M:%0S%p)"
+    },
+    "date": {
+      "help": "Say the current date",
+      "chat": "$time(%A, %B %d, %Y)"
+    },
+    "puppet": {
+      "help": "Puppet an avatar's emotes",
+      "arguments": {
+        "1": {
+          "session": {
+            "key": "puppeteer",
+            "value": "$1"
+          }
+        }
+      }
+    },
+    "nopuppet": {
+      "help": "Stop puppet mode",
+      "session": {
+        "key": "puppeteer",
+        "value": ""
+      }
     }
   }
 }

@@ -76,11 +76,23 @@ class ListenerArgProcessor {
     rest = rest.slice(index + 1);
     switch (hint) {
       case 'var': {
-        inner = inner.toLowerCase();
-        if (!There.variables.hasOwnProperty(inner)) {
-          throw `Variable not found: ${inner}`;
+        let key = inner.toLowerCase();
+        if (!There.variables.hasOwnProperty(key)) {
+          throw `Variable not found: ${key}`;
         }
-        text += There.variables[inner];
+        text += There.variables[key];
+        break;
+      }
+      case 'storage': {
+        if (There.data.prefix == undefined) {
+          throw `Storage prefix not set`;
+        }
+        let key = `${There.data.prefix}.${inner.toLowerCase()}`;
+        let value = window.localStorage.getItem(key);
+        if (value == null) {
+          throw `Storage not found: ${key}`;
+        }
+        text += value;
         break;
       }
       case 'encode': {
@@ -116,8 +128,155 @@ class ListenerArgProcessor {
         text += There.data.avatars.doids[inner];
         break;
       }
+      case 'time': {
+        let now = new Date();
+        inner = Array.from(inner)
+        while (inner.length > 0) {
+          let char = inner.shift();
+          if (char != '%') {
+            text += char;
+            continue;
+          }
+          char = inner.shift();
+          let zero = (char == '0');
+          if (zero) {
+            char = inner.shift();
+          }
+          switch (char) {
+            case 'a': {
+              text += ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][now.getDay()];
+              break;
+            }
+            case 'A': {
+              text += ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'][now.getDay()];
+              break;
+            }
+            case 'b': {
+              text += ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'][now.getMonth()];
+              break;
+            }
+            case 'B': {
+              text += ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'][now.getMonth()];
+              break;
+            }
+            case 'C': {
+              text += String(Math.floor(now.getFullYear() / 100));
+              break;
+            }
+            case 'd': {
+              if (zero) {
+                text += String(now.getDate() + 100).slice(-2);
+              } else {
+                text += String(now.getDate());
+              }
+              break;
+            }
+            case 'f': {
+              if (zero) {
+                text += String(now.getMilliseconds() + 1000).slice(-3);
+              } else {
+                text += String(now.getMilliseconds());
+              }
+              break;
+            }
+            case 'H': {
+              if (zero) {
+                text += String(now.getHours() + 100).slice(-2);
+              } else {
+                text += String(now.getHours());
+              }
+              break;
+            }
+            case 'I': {
+              let hour = ((now.getHours() + 11) % 12) + 1;
+              if (zero) {
+                text += String(hour + 100).slice(-2);
+              } else {
+                text += String(hour);
+              }
+              break;
+            }
+            case 'j': {
+              // Day of the year (1-366)
+              throw `Format not implemented: %${char}`;
+            }
+            case 'm': {
+              if (zero) {
+                text += String(now.getMonth() + 101).slice(-2);
+              } else {
+                text += String(now.getMonth() + 1);
+              }
+              break;
+            }
+            case 'M': {
+              if (zero) {
+                text += String(now.getMinutes() + 100).slice(-2);
+              } else {
+                text += String(now.getMinutes());
+              }
+              break;
+            }
+            case 'p': {
+              text += now.getHours() < 12 ? 'am' : 'pm';
+              break;
+            }
+            case 'S': {
+              if (zero) {
+                text += String(now.getSeconds() + 100).slice(-2);
+              } else {
+                text += String(now.getSeconds());
+              }
+              break;
+            }
+            case 'U': {
+              // Week number with the first Sunday as the first day of week one (0-53)
+              throw `Format not implemented: %${char}`;
+            }
+            case 'V': {
+              // ISO 8601 week number (1-53)
+              throw `Format not implemented: %${char}`;
+            }
+            case 'w': {
+              text += String(now.getDay());
+              break;
+            }
+            case 'W': {
+              // Week number with the first Monday as the first day of week one (0-53)
+              throw `Format not implemented: %${char}`;
+            }
+            case 'y': {
+              if (zero) {
+                text += String(now.getYear() + 100).slice(-2);
+              } else {
+                text += String(now.getYear() % 100);
+              }
+              break;
+            }
+            case 'Y': {
+              text += String(now.getFullYear());
+              break;
+            }
+            case 'z': {
+              // ISO 8601 offset from UTC in timezone
+              throw `Format not implemented: %${char}`;
+            }
+            case 'Z': {
+              // Timezone name or abbreviation
+              throw `Format not implemented: %${char}`;
+            }
+            case '%': {
+              text += '%';
+              break;
+            }
+            default: {
+              throw `Format not valid: %${char}`;
+            }
+          }
+        }
+        break;
+      }
       default: {
-        throw `Hint not found: ${hint}`;
+        throw `Hint not valid: ${hint}`;
       }
     }
     text += rest;
@@ -131,6 +290,7 @@ There.init({
       doids: {},
       names: {},
     },
+    session: {},
   },
 
   onReady: function() {
@@ -138,12 +298,10 @@ There.init({
       width: Number(There.variables.there_windowwidth ?? 800),
       height: 25,
     });
-
     There.fsCommand('setWidthHeight', {
       width: Number(There.variables.there_windowwidth ?? 800),
       height: 25,
     });
-
     There.fsCommand('setTextureBitDepth', {
       depth: 32,
     });
@@ -155,18 +313,18 @@ There.init({
         width: Number(value),
         height: 25,
       });
-
       There.fsCommand('setWidthHeight', {
         width: Number(value),
         height: 25,
       });
     }
-
     if (name == 'there_thisplaceenabled' || name == 'there_instandardview' || name == 'there_inbodyview' ||
         name == 'there_aerialviewallowed' || name == 'there_emotionsflashing' || name == 'there_lastwindowavailable') {
       $('.shortcutbar').attr(name.replace('there_', 'data-'), value);
     }
-
+    if (name == 'there_pilotdoid') {
+      There.data.prefix = `hmph.mods.commandbar.${value}`;
+    }
     if (name == 'there_ready' && value == 1) {
       Promise.all([
         There.fetchPilotXml(),
@@ -288,17 +446,18 @@ There.init({
       } else {
         return;
       }
-      if (entry.constructor.name == 'Array') {
-        entry = entry.find(function(element) {
-          if (entry.match == undefined) {
-            return true;
-          }
-          if (processor.joinedArgs.match(entry.match) != null) {
-            return true;
-          }
-          return false;
-        });
+      if (entry.constructor.name != 'Array') {
+        entry = [entry];
       }
+      entry = entry.find(function(element) {
+        if (element.match == undefined) {
+          return true;
+        }
+        if (processor.joinedArgs.match(element.match) != null) {
+          return true;
+        }
+        return false;
+      });
     }
     if (entry == undefined) {
       return;
@@ -310,12 +469,11 @@ There.init({
       There.guiCommand(await processor.apply(entry.guicommand));
     }
     if (entry.scripthook != undefined) {
-      let query = {
-        Path: entry.scripthook,
-      };
       There.fetch({
         path: '/ScriptHook/Invoke',
-        query: query,
+        query: {
+          Path: entry.scripthook,
+        },
         dataType: 'xml',
       });
     }
@@ -327,19 +485,58 @@ There.init({
       });
     }
     if (entry.environment != undefined) {
-      let environment = entry.environment.constructor.name == 'Object' ? [entry.environment] : entry.environment;
-      for (let variable of environment) {
-        let query = {
-          variable: await processor.apply(variable.key),
-          value: await processor.apply(variable.value),
-          modify: '',
-        };
+      let pairs = entry.environment.constructor.name == 'Object' ? [entry.environment] : entry.environment;
+      for (let pair of pairs) {
         There.fetch({
           path: '/environment/top',
-          query: query,
+          query: {
+            variable: await processor.apply(pair.key),
+            value: await processor.apply(pair.value),
+            modify: '',
+          },
           dataType: 'xml',
         });
       }
     }
+    if (entry.storage != undefined && There.data.prefix != undefined) {
+      let pairs = entry.storage.constructor.name == 'Object' ? [entry.storage] : entry.storage;
+      for (let pair of pairs) {
+        let key = await processor.apply(pair.key);
+        let value = await processor.apply(pair.value);
+        window.localStorage.setItem(`${There.data.prefix}.${key.toLowerCase()}`, value);
+      }
+    }
+    if (entry.session != undefined) {
+      let pairs = entry.session.constructor.name == 'Object' ? [entry.session] : entry.session;
+      for (let pair of pairs) {
+        let key = await processor.apply(pair.key);
+        let value = await processor.apply(pair.value);
+        There.data.session[key.toLowerCase()] = value;
+      }
+    }
+    if (entry.chat != undefined) {
+      There.addChatText(await processor.apply(entry.chat));
+    }
+    if (entry.function != undefined) {
+      let parameters = entry.function.constructor.name == 'String' ? [entry.function] : entry.function;
+      There.listenerFunctions[parameters[0]].apply(null, parameters.slice(1));
+    }
+  },
+
+  addChatText(text) {
+    if (text.length == 0) {
+      return;
+    }
+    There.fetch({
+      path: '/ScriptHook/Invoke',
+      query: {
+        Path: '/acc/addChatText',
+        Args: `text=${text.substring(0, 80)}\n`,
+      },
+      dataType: 'xml',
+    });
+  },
+
+  listenerFunctions: {
   },
 });
