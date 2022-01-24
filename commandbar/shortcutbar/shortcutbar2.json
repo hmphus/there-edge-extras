@@ -808,24 +808,6 @@
     "date": {
       "help": "Say the current date",
       "chat": "$time(%A, %B %d, %Y)"
-    },
-    "puppet": {
-      "help": "Puppet an avatar's emotes",
-      "arguments": {
-        "1": {
-          "session": {
-            "key": "puppeteer",
-            "value": "$1"
-          }
-        }
-      }
-    },
-    "nopuppet": {
-      "help": "Stop puppet mode",
-      "session": {
-        "key": "puppeteer",
-        "value": ""
-      }
     }
   }
 }

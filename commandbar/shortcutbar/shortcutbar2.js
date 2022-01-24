@@ -130,7 +130,7 @@ class ListenerArgProcessor {
       }
       case 'time': {
         let now = new Date();
-        inner = Array.from(inner)
+        inner = Array.from(inner);
         while (inner.length > 0) {
           let char = inner.shift();
           if (char != '%') {
@@ -416,13 +416,19 @@ There.init({
           }
         }
         text = text.trim();
-        if (author == There.variables.there_pilotname && text.startsWith('/')) {
-          let args = text.split(' ');
-          let command = args.shift().slice(1).toLowerCase();
-          if (command != '') {
-            There.handleListenerCommand(command, args).catch(function(error) {
-              console.log(error);
-            });
+        if (author == There.variables.there_pilotname) {
+          if (text.startsWith('/')) {
+            let args = text.split(' ');
+            let command = args.shift().slice(1).toLowerCase();
+            if (command != '') {
+              There.handleListenerCommand(command, args).catch(function(error) {
+                console.log(error);
+              });
+            }
+          }
+        } else if (author.toLowerCase() == There.data.session.puppeteer?.toLowerCase()) {
+          for (let emote of text.matchAll(/['`]+[a-zA-Z0-9]+/g)) {
+            There.addChatText(emote[0] + emote[0][0]);
           }
         }
       }
