@@ -19,5 +19,5 @@ if __name__ == '__main__':
         ])
     size = max([len(e[0]) for e in entries])
     for entry in sorted(entries, key=lambda e: e[0]):
-        print('%-*s  %s' % (size, entry[0], entry[1]))
+        print('  %-*s  %s' % (size, entry[0], entry[1]))
         
