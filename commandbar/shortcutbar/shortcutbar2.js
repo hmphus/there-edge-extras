@@ -77,22 +77,41 @@ class ListenerArgProcessor {
     switch (hint) {
       case 'var': {
         let key = inner.toLowerCase();
-        if (!There.variables.hasOwnProperty(key)) {
-          throw `Variable not found: ${key}`;
+        index = inner.indexOf(',');
+        if (index >= 0) {
+          key = key.slice(0, index);
+          inner = inner.slice(index + 1).trimLeft();
         }
-        text += There.variables[key];
+        if (!There.variables.hasOwnProperty(key)) {
+          if (index < 0) {
+            throw `Variable not found: ${key}`;
+          }
+          text += inner;
+        } else {
+          text += There.variables[key];
+        }
         break;
       }
       case 'storage': {
         if (There.data.prefix == undefined) {
           throw `Storage prefix not set`;
         }
-        let key = `${There.data.prefix}.${inner.toLowerCase()}`;
+        let key = inner.toLowerCase();
+        index = inner.indexOf(',');
+        if (index >= 0) {
+          key = key.slice(0, index);
+          inner = inner.slice(index + 1).trimLeft();
+        }
+        key = `${There.data.prefix}.${key}`;
         let value = window.localStorage.getItem(key);
         if (value == null) {
-          throw `Storage not found: ${key}`;
+          if (index < 0) {
+            throw `Storage not found: ${key}`;
+          }
+          text += inner;
+        } else {
+          text += value;
         }
-        text += value;
         break;
       }
       case 'encode': {
@@ -468,6 +487,36 @@ There.init({
     if (entry == undefined) {
       return;
     }
+    if (entry.storage != undefined && There.data.prefix != undefined) {
+      let pairs = entry.storage.constructor.name == 'Object' ? [entry.storage] : entry.storage;
+      for (let pair of pairs) {
+        let key = await processor.apply(pair.key);
+        let value = await processor.apply(pair.value);
+        window.localStorage.setItem(`${There.data.prefix}.${key.toLowerCase()}`, value);
+      }
+    }
+    if (entry.session != undefined) {
+      let pairs = entry.session.constructor.name == 'Object' ? [entry.session] : entry.session;
+      for (let pair of pairs) {
+        let key = await processor.apply(pair.key);
+        let value = await processor.apply(pair.value);
+        There.data.session[key.toLowerCase()] = value;
+      }
+    }
+    if (entry.environment != undefined) {
+      let pairs = entry.environment.constructor.name == 'Object' ? [entry.environment] : entry.environment;
+      for (let pair of pairs) {
+        There.fetch({
+          path: '/environment/top',
+          query: {
+            variable: await processor.apply(pair.key),
+            value: await processor.apply(pair.value),
+            modify: '',
+          },
+          dataType: 'xml',
+        });
+      }
+    }
     if (entry.fscommand != undefined) {
       There.fsCommand(entry.fscommand.command, await processor.apply(entry.fscommand.query));
     }
@@ -489,36 +538,6 @@ There.init({
         query: await processor.apply(entry.fetch.query ?? {}),
         dataType: 'xml',
       });
-    }
-    if (entry.environment != undefined) {
-      let pairs = entry.environment.constructor.name == 'Object' ? [entry.environment] : entry.environment;
-      for (let pair of pairs) {
-        There.fetch({
-          path: '/environment/top',
-          query: {
-            variable: await processor.apply(pair.key),
-            value: await processor.apply(pair.value),
-            modify: '',
-          },
-          dataType: 'xml',
-        });
-      }
-    }
-    if (entry.storage != undefined && There.data.prefix != undefined) {
-      let pairs = entry.storage.constructor.name == 'Object' ? [entry.storage] : entry.storage;
-      for (let pair of pairs) {
-        let key = await processor.apply(pair.key);
-        let value = await processor.apply(pair.value);
-        window.localStorage.setItem(`${There.data.prefix}.${key.toLowerCase()}`, value);
-      }
-    }
-    if (entry.session != undefined) {
-      let pairs = entry.session.constructor.name == 'Object' ? [entry.session] : entry.session;
-      for (let pair of pairs) {
-        let key = await processor.apply(pair.key);
-        let value = await processor.apply(pair.value);
-        There.data.session[key.toLowerCase()] = value;
-      }
     }
     if (entry.chat != undefined) {
       There.addChatText(await processor.apply(entry.chat));

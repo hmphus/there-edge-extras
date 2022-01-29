@@ -803,7 +803,24 @@
     "time": {
       "aliases": ["t", "tt"],
       "help": "Say the current time",
-      "chat": "$time(%I:%0M:%0S%p)"
+      "chat": "$time($storage(time,%I:%0M:%0S%p))",
+      "arguments": {
+        "1": [{
+          "match": "^12$",
+          "storage": {
+            "key": "time",
+            "value": "%I:%0M:%0S%p"
+          },
+          "chat": "$time($storage(time))"
+        }, {
+          "match": "^24$",
+          "storage": {
+            "key": "time",
+            "value": "%H:%0M:%0S"
+          },
+          "chat": "$time($storage(time))"
+        }]
+      }
     },
     "date": {
       "help": "Say the current date",
