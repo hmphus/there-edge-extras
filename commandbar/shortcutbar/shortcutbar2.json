@@ -95,10 +95,7 @@
       "guicommand": "browse",
       "arguments": {
         "+": {
-          "fscommand": {
-            "command": "browser",
-            "query": "$+"
-          }
+          "browser": "$+"
         }
       }
     },
@@ -261,10 +258,7 @@
     "local": {
       "aliases": ["debug"],
       "help": "Open system cockpit page",
-      "fscommand": {
-        "command": "browser",
-        "query": "http://127.0.0.1:9999/"
-      }
+      "browser": "http://127.0.0.1:9999/"
     },
     "var": {
       "help": "Set environment variable",
@@ -439,10 +433,7 @@
     "perf": {
       "aliases": ["pk"],
       "help": "Open performance knob manager page",
-      "fscommand": {
-        "command": "browser",
-        "query": "http://127.0.0.1:9999/PerfKnobManager/set"
-      },
+      "browser": "http://127.0.0.1:9999/PerfKnobManager/set",
       "arguments": {
         "2": {
           "fetch": {
@@ -511,33 +502,21 @@
     "voicetrainer": {
       "aliases": ["vt"],
       "help": "Open voice trainer page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/VoiceTrainer/Trainer.html"
-      }
+      "browser": "https://webapps.prod.there.com/VoiceTrainer/Trainer.html"
     },
     "commercehistory": {
       "aliases": ["th", "thist"],
       "help": "Open transaction history page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/commercehistory/commercehistory"
-      }
+      "browser": "https://webapps.prod.there.com/commercehistory/commercehistory"
     },
     "events": {
       "help": "Open event schedule page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/eventmgmt/myevents?show=attend"
-      }
+      "browser": "https://webapps.prod.there.com/eventmgmt/myevents?show=attend"
     },
     "happening": {
       "aliases": ["hn", "now"],
       "help": "Open Happening Now page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/eventmgmt/eventmgmt?op=search2&HappeningNow=1&minPop=1"
-      }
+      "browser": "https://webapps.prod.there.com/eventmgmt/eventmgmt?op=search2&HappeningNow=1&minPop=1"
     },
     "tbux": {
       "aliases": ["tb"],
@@ -547,113 +526,77 @@
     "avsearch": {
       "aliases": ["avatar"],
       "help": "Open avatar search page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/profiles/people-search.xml"
-      },
+      "browser": "https://webapps.prod.there.com/profiles/people-search.xml",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/listings/listings?Type=12&Filter=12&PageSize=20&Stylesheet=/profiles/people-search-results.xsl&t_AvatarName_1=S&o_AvatarName_1=LIKE&v_AvatarName_1=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/listings/listings?Type=12&Filter=12&PageSize=20&Stylesheet=/profiles/people-search-results.xsl&t_AvatarName_1=S&o_AvatarName_1=LIKE&v_AvatarName_1=$encode($1)"
         }
       }
     },
     "goto": {
       "help": "Open real estate page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/places/places?count=100"
-      },
+      "browser": "https://webapps.prod.there.com/places/places?count=100",
       "arguments": {
         "1": [{
           "match": "^[0-9]+$",
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/goto/goto?obj=$encode($1)"
+          "browser": {
+            "url": "https://webapps.prod.there.com/goto/goto?obj=$encode($1)",
+            "autoclose": true
           }
         }, {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/goto/goto?placename=$encode($1)"
+          "browser": {
+            "url": "https://webapps.prod.there.com/goto/goto?placename=$encode($1)",
+            "autoclose": true
           }
         }],
         "+": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/goto/goto?placename=$encode($+)"
+          "browser": {
+            "url": "https://webapps.prod.there.com/goto/goto?placename=$encode($+)",
+            "autoclose": true
           }
         }
       }
     },
     "places": {
       "help": "Open real estate page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/places/places?count=100"
-      }
+      "browser": "https://webapps.prod.there.com/places/places?count=100"
     },
     "profile": {
       "aliases": ["pf"],
       "help": "Open profile page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/profiles/profiles?op=edit"
-      },
+      "browser": "https://webapps.prod.there.com/profiles/profiles?op=edit",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$encode($1)"
         }
       }
     },
     "xsl": {
       "help": "Open profile page without stylesheet",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/profiles/profiles?op=edit&omitXsl=1"
-      },
+      "browser": "https://webapps.prod.there.com/profiles/profiles?op=edit&omitXsl=1",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$encode($1)&omitXsl=1"
-          }
+          "browser": "https://webapps.prod.there.com/profiles/profiles?op=view&AvatarName=$encode($1)&omitXsl=1"
         }
       }
     },
     "seller": {
       "aliases": ["sales"],
       "help": "Open sales page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($var(there_pilotname))"
-      },
+      "browser": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($var(there_pilotname))",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/items/sellersearch?SortDescDate=EndTime&PageSize=50&Page=1&SellerName=$encode($1)"
         }
       }
     },
     "designer": {
       "aliases": ["designs"],
       "help": "Open developer auctions page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($var(there_pilotname))"
-      },
+      "browser": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($var(there_pilotname))",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/items/designersearch?Page=1&PageSize=50&SortDescDate=EndTime&ArtKitDesignerName=$encode($1)"
         }
       }
     },
@@ -661,38 +604,23 @@
       "help": "Open bid history page",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/bidhistory?ItemId=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/items/bidhistory?ItemId=$encode($1)"
         }
       }
     },
     "auctions": {
       "aliases": ["auction", "ac"],
       "help": "Open auctions page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/items/home"
-      },
+      "browser": "https://webapps.prod.there.com/items/home",
       "arguments": {
         "1": [{
           "match": "^[0-9]+$",
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/view?ItemId=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/items/view?ItemId=$encode($1)"
         }, {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/fulltextsearch?Fulltext=$encode($1)"
-          }
+          "browser": "https://webapps.prod.there.com/items/fulltextsearch?Fulltext=$encode($1)"
         }],
         "+": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/fulltextsearch?Fulltext=$encode($+)"
-          }
+          "browser": "https://webapps.prod.there.com/items/fulltextsearch?Fulltext=$encode($+)"
         }
       }
     },
@@ -701,41 +629,26 @@
       "help": "Open completed auctions page",
       "arguments": {
         "1": {
-          "fscommand": {
-            "command": "browser",
-            "query": "https://webapps.prod.there.com/items/fulltextsearch?completed=yes&Fulltext=$encode($+)"
-          }
+          "browser": "https://webapps.prod.there.com/items/fulltextsearch?completed=yes&Fulltext=$encode($+)"
         }
       }
     },
     "myitems": {
       "help": "Open auction items page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/items/myitems"
-      }
+      "browser": "https://webapps.prod.there.com/items/myitems"
     },
     "shop": {
       "help": "Open Shop Central page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/catalog/"
-      }
+      "browser": "https://webapps.prod.there.com/catalog/"
     },
     "dev": {
       "help": "Open developer home page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/developers/developer_home.xml"
-      }
+      "browser": "https://webapps.prod.there.com/developers/developer_home.xml"
     },
     "review": {
       "aliases": ["reviews", "r"],
       "help": "Open developer reviews page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/wsgi-scripts/review.py/reviewables"
-      }
+      "browser": "https://webapps.prod.there.com/wsgi-scripts/review.py/reviewables"
     },
     "forum": {
       "aliases": ["forums"],
@@ -745,18 +658,12 @@
     "blog": {
       "aliases": ["blogs"],
       "help": "Open blog page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://blog.there.com/"
-      }
+      "browser": "https://blog.there.com/"
     },
     "status": {
       "aliases": ["avman"],
       "help": "Open avman status page",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/status/avman.xml"
-      }
+      "browser": "https://webapps.prod.there.com/status/avman.xml"
     },
     "map": {
       "help": "Open map",
@@ -764,10 +671,7 @@
     },
     "url": {
       "help": "Open the last URL typed in chat by anyone",
-      "fscommand": {
-        "command": "browser",
-        "query": "$var(there_lasturl)"
-      }
+      "browser": "$var(there_lasturl)"
     },
     "chathistory": {
       "aliases": ["log", "ch"],
@@ -786,9 +690,9 @@
     },
     "home": {
       "help": "Teleport to your home location",
-      "fscommand": {
-        "command": "browser",
-        "query": "https://webapps.prod.there.com/goto/goto?obj=$encode($storage(home))"
+      "browser": {
+        "url": "https://webapps.prod.there.com/goto/goto?obj=$encode($storage(home))",
+        "autoclose": true
       },
       "arguments": {
         "1": [{

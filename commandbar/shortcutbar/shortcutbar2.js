@@ -539,6 +539,13 @@ There.init({
         dataType: 'xml',
       });
     }
+    if (entry.browser != undefined) {
+      let query = entry.browser.constructor.name == 'Object' ? entry.browser : {
+        'url': entry.browser,
+      };
+      let autoclose = query.autoclose ?? false
+      There.fsCommand('browser', await processor.apply(query.url));
+    }
     if (entry.chat != undefined) {
       There.addChatText(await processor.apply(entry.chat));
     }
