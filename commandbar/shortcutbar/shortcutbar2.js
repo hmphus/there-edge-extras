@@ -310,6 +310,10 @@ There.init({
       names: {},
     },
     session: {},
+    windows: {
+      version: 0,
+      names: {},
+    },
   },
 
   onReady: function() {
@@ -454,6 +458,64 @@ There.init({
     }
   },
 
+  fetchClientWindowsXml: function(callback) {
+    There.data.ident = Math.random();
+    There.fetch({
+      path: '/ScriptHook/Get',
+      query: {
+        Path: '/client/windows',
+      },
+      dataType: 'xml',
+      success: There.onClientWindowsXml,
+      complete: callback,
+    });
+  },
+
+  onClientWindowsXml: function(xml) {
+    const xmlAnswer = xml.getElementsByTagName('Answer')[0];
+    const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
+    if (xmlResult.childNodes[0].nodeValue != 1) {
+      return;
+    }
+    const xmlVersion = xmlAnswer.getElementsByTagName('Version')[0];
+    There.data.windows.version = xmlVersion.childNodes[0].nodeValue;
+    const xmlNode = xmlAnswer.getElementsByTagName('Node')[0];
+    const xmlChildren = xmlNode.getElementsByTagName('Children')[0];
+    for (let xmlChild of xmlChildren.childNodes) {
+      if (xmlChild.nodeName == 'Child') {
+        const name = xmlChild.getElementsByTagName('Name')[0].childNodes[0].nodeValue;
+        if (!There.data.windows.names.hasOwnProperty(name)) {
+          There.data.windows.names[name] = There.data.windows.version;
+        }
+      }
+    }
+  },
+
+  fetchClientWindowCloseButtonXml: function(name, callback) {
+    There.data.ident = Math.random();
+    There.fetch({
+      path: '/ScriptHook/Get',
+      query: {
+        Path: `/client/windows/${name}/hasCloseButton`,
+      },
+      dataType: 'xml',
+      success: function(xml) {
+        if (There.onClientWindowCloseButtonXml(xml)) {
+          callback();
+        }
+      },
+    });
+  },
+
+  onClientWindowCloseButtonXml: function(xml) {
+    const xmlAnswer = xml.getElementsByTagName('Answer')[0];
+    const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
+    if (xmlResult.childNodes[0].nodeValue != 1) {
+      return false;
+    }
+    return true;
+  },
+
   handleListenerCommand: async function(command, args) {
     let entry = There.data.config.commands[command];
     if (entry == undefined) {
@@ -543,8 +605,30 @@ There.init({
       let query = entry.browser.constructor.name == 'Object' ? entry.browser : {
         'url': entry.browser,
       };
-      let autoclose = query.autoclose ?? false
-      There.fsCommand('browser', await processor.apply(query.url));
+      let url = await processor.apply(query.url);
+      let autoclose = query.autoclose ?? false;
+      if (autoclose && false) {
+        There.fetchClientWindowsXml(function() {
+          There.fsCommand('browser', url);
+          setTimeout(function() {
+            There.fetchClientWindowsXml(function() {
+              for (let name of Object.keys(There.data.windows.names).filter(k => There.data.windows.names[k] == There.data.windows.version)) {
+                There.fetchClientWindowCloseButtonXml(name, function() {
+                  There.fetch({
+                    path: '/ScriptHook/Invoke',
+                    query: {
+                      Path: `/client/windows/${name}/close`,
+                    },
+                    dataType: 'xml',
+                  });
+                });
+              }
+            });
+          }, 2000);
+        });
+      } else {
+        There.fsCommand('browser', url);
+      }
     }
     if (entry.chat != undefined) {
       There.addChatText(await processor.apply(entry.chat));
