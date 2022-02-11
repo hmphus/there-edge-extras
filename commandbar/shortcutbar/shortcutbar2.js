@@ -513,6 +513,11 @@ There.init({
     if (xmlResult.childNodes[0].nodeValue != 1) {
       return false;
     }
+    const xmlNode = xmlAnswer.getElementsByTagName('Node')[0];
+    const xmlValue = xmlNode.getElementsByTagName('Value')[0];
+    if (xmlValue.childNodes[0].nodeValue != 1) {
+      return false;
+    }
     return true;
   },
 
@@ -607,7 +612,7 @@ There.init({
       };
       let url = await processor.apply(query.url);
       let autoclose = query.autoclose ?? false;
-      if (autoclose && false) {
+      if (autoclose) {
         There.fetchClientWindowsXml(function() {
           There.fsCommand('browser', url);
           setTimeout(function() {
