@@ -345,16 +345,17 @@ There.init({
         name == 'there_aerialviewallowed' || name == 'there_emotionsflashing' || name == 'there_lastwindowavailable') {
       $('.shortcutbar').attr(name.replace('there_', 'data-'), value);
     }
-    if (name == 'there_pilotdoid') {
-      There.data.prefix = `hmph.mods.commandbar.${value}`;
-    }
     if (name == 'there_ready' && value == 1) {
+      There.clearNamedTimer('pilot');
       Promise.all([
         There.fetchPilotXml(),
         There.fetchConfigJson(),
       ]).then(function() {
         There.fetchCommMessageXml();
       });
+    }
+    if (name == 'there_configurationchanged' && value == 1) {
+      There.setNamedTimer('pilot', 1000, There.fetchPilotXml);
     }
   },
 
@@ -370,8 +371,10 @@ There.init({
     const xmlAnswer = xml.getElementsByTagName('Answer')[0];
     const doid = Number(xmlAnswer.getElementsByTagName('PilotDoid')[0].childNodes[0].nodeValue);
     const name = xmlAnswer.getElementsByTagName('PilotName')[0].childNodes[0].nodeValue;
-    if (doid == There.variables.there_pilotdoid) {
+    if (doid != 0 && name != '') {
+      There.variables.there_pilotdoid = doid;
       There.variables.there_pilotname = name;
+      There.data.prefix = `hmph.mods.commandbar.${doid}`;
     }
   },
 

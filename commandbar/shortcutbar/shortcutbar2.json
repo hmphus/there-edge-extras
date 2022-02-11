@@ -729,6 +729,10 @@
     "date": {
       "help": "Say the current date",
       "chat": "$time(%A, %B %d, %Y)"
+    },
+    "whoami": {
+      "help": "Say the avatar's name",
+      "chat": "$var(there_pilotname)"
     }
   }
 }
