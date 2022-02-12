@@ -84,11 +84,28 @@ class ListenerArgProcessor {
         }
         if (!There.variables.hasOwnProperty(key)) {
           if (index < 0) {
-            throw `Variable not found: ${key}`;
+            throw `Variable key not found: ${key}`;
           }
           text += inner;
         } else {
           text += There.variables[key];
+        }
+        break;
+      }
+      case 'session': {
+        let key = inner.toLowerCase();
+        index = inner.indexOf(',');
+        if (index >= 0) {
+          key = key.slice(0, index);
+          inner = inner.slice(index + 1).trimLeft();
+        }
+        if (!There.data.session.hasOwnProperty(key)) {
+          if (index < 0) {
+            throw `Session key not found: ${key}`;
+          }
+          text += inner;
+        } else {
+          text += There.data.session[key];
         }
         break;
       }
@@ -106,7 +123,7 @@ class ListenerArgProcessor {
         let value = window.localStorage.getItem(key);
         if (value == null) {
           if (index < 0) {
-            throw `Storage not found: ${key}`;
+            throw `Storage key not found: ${key}`;
           }
           text += inner;
         } else {
@@ -292,6 +309,25 @@ class ListenerArgProcessor {
             }
           }
         }
+        break;
+      }
+      case 'random': {
+        let args = inner.split(',');
+        let minimum = Number(args[0]);
+        let maximum = Number(args[1]);
+        if (isNaN(minimum) || isNaN(maximum)) {
+          throw 'Arguments are not numbers';
+        }
+        if (minimum > maximum) {
+          let number = minimum;
+          minimum = maximum;
+          maximum = number;
+        }
+        let value = minimum;
+        if (maximum > minimum) {
+          value = Math.floor(Math.random() * (maximum - minimum + 1)) + minimum;
+        }
+        text += String(value);
         break;
       }
       default: {

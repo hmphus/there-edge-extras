@@ -733,6 +733,40 @@
     "whoami": {
       "help": "Say the avatar's name",
       "chat": "$var(there_pilotname)"
+    },
+    "random": {
+      "aliases": ["rnd"],
+      "help": "Say a random number",
+      "chat": "$random(1,100)",
+      "arguments": {
+        "1": {
+          "chat": "$random(1,$1)"
+        },
+        "2": {
+          "chat": "$random($1,$2)"
+        }
+      }
+    },
+    "emote": {
+      "aliases": ["emotes"],
+      "help": "Turn on mimic emote mode",
+      "chat": "$session(puppeteer)",
+      "arguments": {
+        "1": {
+          "session": {
+            "key": "puppeteer",
+            "value": "$1"
+          }
+        }
+      }
+    },
+    "noemote": {
+      "aliases": ["noemotes"],
+      "help": "Turn off mimic emote mode",
+      "session": {
+        "key": "puppeteer",
+        "value": ""
+      }
     }
   }
 }
