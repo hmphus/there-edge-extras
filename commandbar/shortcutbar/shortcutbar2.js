@@ -489,8 +489,8 @@ There.init({
             }
           }
         } else if (author.toLowerCase() == There.data.session.puppeteer?.toLowerCase()) {
-          for (let emote of text.matchAll(/['`]+[a-zA-Z0-9]+/g)) {
-            There.addChatText(emote[0] + emote[0][0]);
+          for (let emote of text.split(' ').filter(t => t.match(/^['`]+[a-zA-Z0-9]+$/))) {
+            There.addChatText(emote + emote[0]);
           }
         }
       }
