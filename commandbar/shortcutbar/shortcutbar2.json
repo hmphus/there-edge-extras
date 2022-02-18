@@ -256,7 +256,7 @@
       "scripthook": "/mainMenu/People/Action Bar/activate"
     },
     "local": {
-      "aliases": ["debug"],
+      "aliases": ["debug", "localhost"],
       "help": "Open system cockpit page",
       "browser": "http://127.0.0.1:9999/"
     },
@@ -402,6 +402,34 @@
     "yellow": {
       "help": "Use yellow text color",
       "scripthook": "/mainMenu/There/Customize/Chat/Chat Text Color/Yellow/activate"
+    },
+    "quality": {
+      "help": "Use high performance render settings",
+      "fetch": {
+        "path": "/PerfKnobManager/set",
+        "query": {
+          "viewScale": "5.0",
+          "skuteLodDistanceDelta": "700.0"
+        }
+      },
+      "environment": {
+        "key": "forceToLod",
+        "value": "1"
+      }
+    },
+    "noquality": {
+      "help": "Use normal render settings",
+      "fetch": {
+        "path": "/PerfKnobManager/set",
+        "query": {
+          "viewScale": "1.0",
+          "skuteLodDistanceDelta": "-1.0"
+        }
+      },
+      "environment": {
+        "key": "forceToLod",
+        "value": "0"
+      }
     },
     "viewscale": {
       "aliases": ["vs"],
