@@ -678,6 +678,16 @@
       "help": "Open developer reviews page",
       "browser": "https://webapps.prod.there.com/wsgi-scripts/review.py/reviewables"
     },
+    "status": {
+      "aliases": ["avman"],
+      "help": "Open avman status page",
+      "browser": "https://webapps.prod.there.com/status/avman.xml"
+    },
+    "edge": {
+      "aliases": ["ver", "version"],
+      "help": "Open ThereEdge settings page",
+      "browser": "https://webapps.prod.there.com/edge"
+    },
     "forum": {
       "aliases": ["forums"],
       "help": "Open member fan sites page",
@@ -687,11 +697,6 @@
       "aliases": ["blogs"],
       "help": "Open blog page",
       "browser": "https://blog.there.com/"
-    },
-    "status": {
-      "aliases": ["avman"],
-      "help": "Open avman status page",
-      "browser": "https://webapps.prod.there.com/status/avman.xml"
     },
     "map": {
       "help": "Open map",
