@@ -18,6 +18,14 @@ if __name__ == '__main__':
             entry.get('help', ''),
         ])
     size = max([len(e[0]) for e in entries])
+    lines = []
+    lines.append('# Command Bar Help')
+    lines.append('')
+    lines.append('| Command | Action |')
+    lines.append('|-|-|')
     for entry in sorted(entries, key=lambda e: e[0]):
-        print('  %-*s  %s' % (size, entry[0], entry[1]))
-        
+        lines.append('| %s | %s |' % (entry[0], entry[1]))
+    with open('../COMMANDS.md', 'w') as file:
+        for line in lines:
+            print(line)
+            print(line, file=file)
