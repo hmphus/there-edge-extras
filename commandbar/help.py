@@ -23,5 +23,5 @@ if __name__ == '__main__':
     lines.append('|-|-|')
     for entry in sorted(entries, key=lambda e: e[0]):
         lines.append('| %s | %s |' % (entry[0], entry[1]))
-        for line in lines:
-            print(line)
+    for line in lines:
+        print(line)
