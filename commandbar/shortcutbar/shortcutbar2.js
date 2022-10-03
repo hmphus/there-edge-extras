@@ -700,3 +700,27 @@ There.init({
   listenerFunctions: {
   },
 });
+
+$(document).ready(function() {
+  $('.shortcutbar .buttons.big .window input[type="text"]').on('keypress', function(event) {
+    if (event.which == 13) {
+      let text = $(this).val().trim();
+      if (text.startsWith('/')) {
+        let args = text.split(' ');
+        let command = args.shift().slice(1).toLowerCase();
+        if (command != '') {
+          $(this).val('');
+          There.handleListenerCommand(command, args).catch(function(error) {
+            console.log(error);
+          });
+        }
+      }
+    }
+  }).on('click', function() {
+    if ($(this).is(':focus')) {
+      return;
+    }
+    There.fsCommand('getKeyboardFocus');
+    $(this).focus();
+  });
+});

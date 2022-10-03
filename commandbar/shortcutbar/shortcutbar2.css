@@ -1,0 +1,19 @@
+.shortcutbar .buttons.big .window input[type="text"] {
+  position:absolute;
+  top:0px;
+  left:-6px;
+  width:100%;
+  height:100%;
+  border:none;
+  border-radius:0px;
+  font-size:11px;
+  outline:none;
+  color:#2e4348;
+  background-color:transparent;
+  padding:1px 6px;
+}
+
+.shortcutbar .buttons.big .window input[type="text"]::placeholder {
+  color:#2e4348;
+  opacity:0.5;
+}
