@@ -11,7 +11,8 @@
 <script src="compass2.js"></script>
 </head>
 <body>
-<div class="compass">
+<div class="compass" data-state="full" data-mode="map" data-ready="0">
+<div class="main">
 <div class="map">
 <div class="tile" data-x="0" data-y="0"></div>
 <div class="tile" data-x="2" data-y="0"></div>
@@ -48,7 +49,16 @@
 <div class="mark" data-id="southwest"></div>
 </div>
 </div>
+<div class="track">
+</div>
 <div class="button" data-id="close"></div>
+<div class="button" data-id="expand"></div>
+</div>
+<div class="pick">
+<div class="items"></div>
+</div>
+<div class="contextmenu" data-active="0"></div>
+</div>
 </div>
 </body>
 </html>
