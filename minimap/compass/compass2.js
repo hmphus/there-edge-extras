@@ -290,7 +290,7 @@ There.init({
     }).on('dblclick', function() {
       There.playSound('menu item activate');
       There.clearContextMenu();
-      // TODO: Load track
+      There.fetchTrack(entry.id);
     });
   },
 
@@ -323,28 +323,10 @@ There.init({
           There.playSound('menu item activate');
           There.clearContextMenu();
           if (menu.action == 'go') {
-            let url = `https://webapps.prod.there.com/goto/goto?obj=${entry.teleport}`;
-            There.fetchClientWindowsXml(function() {
-              There.fsCommand('browser', url);
-              setTimeout(function() {
-                There.fetchClientWindowsXml(function() {
-                  for (let name of Object.keys(There.data.windows.names).filter(k => There.data.windows.names[k] == There.data.windows.version)) {
-                    There.fetchClientWindowCloseButtonXml(name, function() {
-                      There.fetch({
-                        path: '/ScriptHook/Invoke',
-                        query: {
-                          Path: `/client/windows/${name}/close`,
-                        },
-                        dataType: 'xml',
-                      });
-                    });
-                  }
-                });
-              }, 2000);
-            });
-
+            There.teleport(entry.teleport);
           }
           if (menu.action == 'join') {
+            There.fetchTrack(entry.id);
           }
           if (menu.action == 'about') {
             There.fsCommand('browser', entry.url);
@@ -365,6 +347,84 @@ There.init({
       id: entry.id,
       top: top,
     };
+  },
+
+  teleport: function(id) {
+    if (!id) {
+      return;
+    }
+    let url = `https://webapps.prod.there.com/goto/goto?obj=${id}`;
+    There.fetchClientWindowsXml(function() {
+      There.fsCommand('browser', url);
+      setTimeout(function() {
+        There.fetchClientWindowsXml(function() {
+          for (let name of Object.keys(There.data.windows.names).filter(k => There.data.windows.names[k] == There.data.windows.version)) {
+            There.fetchClientWindowCloseButtonXml(name, function() {
+              There.fetch({
+                path: '/ScriptHook/Invoke',
+                query: {
+                  Path: `/client/windows/${name}/close`,
+                },
+                dataType: 'xml',
+              });
+            });
+          }
+        });
+      }, 2000);
+    });
+  },
+
+  fetchTrack: function(id) {
+    $.ajax({
+      url: 'https://www.hmph.us/there/api/minimap/track/',
+      method: 'POST',
+      data: {
+        avatar_name: There.variables.there_pilotname ?? '',
+        id: id,
+      },
+      dataType: 'json',
+      success: function(data) {
+        There.setupRace(data.track);
+      },
+    });
+  },
+
+  setupRace: function(track) {
+    $('.compass').attr('data-mode', 'race');
+    $('.compass .race').data('track', track).attr('data-waypoint', '0');
+    $('.compass .race .title').text(`${track.name} by ${track.avatar.name}`);
+    $('.compass .race .button[data-id="go"]').off('click').on('click', function() {
+      There.teleport(track.teleport);
+    });
+    $('.compass .race .button[data-id="leave"]').off('click').on('click', function() {
+      $('.compass').attr('data-mode', 'pick');
+      $('.compass .race').attr('data-active', '0');
+      $('.compass .race .button[data-id="close"]').attr('data-enabled', '1');
+      $('.compass .race .button[data-id="expand"]').attr('data-enabled', '1');
+    });
+    $('.compass .race .button[data-id="about"]').off('click').on('click', function() {
+      There.fsCommand('browser', track.url);
+    });
+    There.setupRaceWaypoint();
+  },
+
+  setupRaceWaypoint: function() {
+    let track = $('.compass .race').data('track');
+    let index = Number($('.compass .race').attr('data-waypoint'));
+    if (index < track.waypoints.length) {
+      let waypoint = track.waypoints[index];
+      $('.compass .race').attr('data-active', '1');
+      $('.compass .race .body[data-id="directions"] span:eq(0)').html(index < track.waypoints.length - 1 ? '&#x2691;' : '&#x272a;');
+      $('.compass .race .body[data-id="directions"] span:eq(1)').text(waypoint.name);
+      $('.compass .race .button[data-id="go"]').attr('data-enabled', index > 0 || !track.teleport ? '0' : '1');
+      $('.compass .race .button[data-id="close"]').attr('data-enabled', index > 0 ? '0' : '1');
+      $('.compass .race .button[data-id="expand"]').attr('data-enabled', index > 0 ? '0' : '1');
+    } else {
+      $('.compass .race').attr('data-active', '0');
+      $('.compass .race .button[data-id="go"]').attr('data-enabled', !track.teleport ? '0' : '1');
+      $('.compass .race .button[data-id="close"]').attr('data-enabled', '1');
+      $('.compass .race .button[data-id="expand"]').attr('data-enabled', '1');
+    }
   },
 
   fetchClientWindowsXml: function(callback) {
@@ -441,10 +501,6 @@ $(document).ready(function() {
     event.stopPropagation();
   });
 
-  $('.compass .button').on('mousedown', function() {
-    There.clearContextMenu();
-  });
-
   $('.contextmenu').on('mousemove', function(event) {
     There.clearNamedTimer('context-menu');
     event.stopPropagation();
@@ -464,22 +520,26 @@ $(document).ready(function() {
     There.clearContextMenu();
   });
 
+  $('.compass .blocker').on('mousedown', function(event) {
+    event.stopPropagation();
+  });
+
+  $('.compass .button').on('mouseover', function(event) {
+    There.playSound('control rollover');
+  }).on('mousedown', function(event) {
+    There.playSound('control down');
+    There.clearContextMenu();
+    event.stopPropagation();
+  }).on('mouseup', function(event) {
+    There.playSound('control up');
+  });
+
   $('.compass .button[data-id="close"]').on('click', function(event) {
-    if ($(this).attr('data-enabled') == 0) {
-      return;
-    }
     if (event.shiftKey) {
       There.fsCommand('openDevTools');
     } else {
       There.fsCommand('closeWindow');
     }
-  }).on('mouseover', function(event) {
-    There.playSound('control rollover');
-  }).on('mousedown', function(event) {
-    There.playSound('control down');
-    event.stopPropagation();
-  }).on('mouseup', function(event) {
-    There.playSound('control up');
   });
 
   $('.compass .button[data-id="expand"]').on('click', function(event) {
@@ -496,12 +556,5 @@ $(document).ready(function() {
         $('.compass').attr('data-mode', 'map');
       }
     }
-  }).on('mouseover', function(event) {
-    There.playSound('control rollover');
-  }).on('mousedown', function(event) {
-    There.playSound('control down');
-    event.stopPropagation();
-  }).on('mouseup', function(event) {
-    There.playSound('control up');
   });
 });

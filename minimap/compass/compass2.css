@@ -34,6 +34,10 @@ body {
   height:400px;
 }
 
+.compass[data-mode="race"] {
+  height:340px;
+}
+
 .compass .main {
   position:absolute;
   left:0px;
@@ -110,26 +114,26 @@ body {
 
 .compass .tile .icon[data-type="hangout"] {
   display:block;
-  background-position-y:-200px;
+  background-position-y:0px;
 }
 
 
 .compass .tile .icon[data-type="neighborhood"],
 .compass .tile .icon[data-type="funzone"] {
   display:block;
-  background-position-y:-206px;
+  background-position-y:-6px;
 }
 
 .compass .tile .icon[data-type="pointofinterest"] {
   display:block;
-  background-position-y:-212px;
+  background-position-y:-12px;
 }
 
 .compass .tile .icon[data-type="hotspot"],
 .compass .tile .icon[data-type="avdensityonly"],
 .compass .tile .icon[data-type="waypoint"] {
   display:block;
-  background-position-y:-218px;
+  background-position-y:-18px;
 }
 
 .compass .overlay {
@@ -267,52 +271,69 @@ body {
   color:#333;
 }
 
+.compass .blocker[data-id="close"] {
+  position:absolute;
+  left:182px;
+  top:0px;
+  width:19px;
+  height:19px;
+}
+
 .compass .button[data-id="close"] {
   position:absolute;
-  left:185px;
+  left:3px;
   top:3px;
   width:13px;
   height:13px;
   background-image:url(compass2.png);
-  background-position:-6px -188px;
+  background-position:-39px -220px;
 }
 
 .compass .button[data-id="close"]:hover {
-  background-position-y:-201px;
+  background-position-x:-52px;
 }
 
 .compass .button[data-id="close"]:hover:active {
-  background-position-y:-214px;
+  background-position-x:-65px;
 }
 
 .compass .button[data-id="close"][data-enabled="0"],
 .compass .button[data-id="close"][data-enabled="0"]:hover,
 .compass .button[data-id="close"][data-enabled="0"]:active {
-  background-position-y:-227px;
+  background-position-x:-78px;
+  pointer-events:none;
+}
+
+.compass .blocker[data-id="expand"] {
+  position:absolute;
+  left:182px;
+  bottom:0px;
+  width:19px;
+  height:19px;
 }
 
 .compass .button[data-id="expand"] {
   position:absolute;
-  left:185px;
+  left:3px;
   bottom:3px;
   width:13px;
   height:13px;
   background-image:url(compass2.png);
-  background-position:-19px -188px;
+  background-position:0px -220px;
 }
 
 .compass .button[data-id="expand"]:hover {
-  background-position-y:-201px;
+  background-position-x:-13px;
 }
 
 .compass .button[data-id="expand"]:hover:active {
-  background-position-y:-214px;
+  background-position-x:-26px;
 }
 
 .compass[data-mode="pick"] .button[data-id="expand"],
 .compass[data-mode="race"] .button[data-id="expand"],
 .compass[data-mode="edit"] .button[data-id="expand"] {
-  background-position-x:-32px;
+  background-position-y:-207px;
 }
 
 .compass[data-ready="0"] .button[data-id="expand"] {
@@ -325,6 +346,11 @@ body {
   top:200px;
   right:0px;
   bottom:0px;
+  display:none;
+}
+
+.compass[data-mode="pick"] .pick {
+  display:block;
 }
 
 .compass .pick .items {
@@ -357,6 +383,114 @@ body {
   font-size:11px;
   margin:0px 8px;
   white-space:nowrap;
+}
+
+.compass .race {
+  position:absolute;
+  left:0px;
+  top:200px;
+  right:0px;
+  bottom:0px;
+  display:none;
+}
+
+.compass[data-mode="race"] .race {
+  display:block;
+}
+
+.compass .race .border {
+  position:absolute;
+  left:6px;
+  top:6px;
+  right:6px;
+  bottom:34px;
+  border:1px solid #666;
+  background-color:#c4f0f8;
+}
+
+.compass .race .panel {
+  position:absolute;
+  left:4px;
+  top:4px;
+  right:4px;
+  bottom:4px;
+  border:1px solid #666;
+  background-color:#fff;
+}
+
+.compass .race .title {
+  padding:2px;
+  border-bottom:1px solid #666;
+  background-color:#e5f3f8;
+  font-size:11px;
+  color:#333;
+}
+
+.compass .race .body {
+  padding:2px;
+  font-size:11px;
+  color:#333;
+}
+
+.compass .race .footer {
+  position:absolute;
+  left:54px;
+  bottom:7px;
+  width:138px;
+  height:22px;
+  font-size:0px;
+  display:flex;
+  justify-content:flex-end;
+}
+
+.compass .race .footer .button {
+  display:inline-block;
+  margin:0px 1px;
+  height:18px;
+  line-height:18px;
+  padding:1px;
+  border:1px solid #666;
+  border-radius:6px;
+  vertical-align:top;
+  background-image:url(compass2.png);
+  font-size:11px;
+  text-align:center;
+}
+
+.compass .race .footer .button:hover {
+  text-shadow:1px 1px 1px #0006;
+}
+
+.compass .race .footer .button:hover:active {
+  text-shadow:0px 0px 2px #0006;
+  padding:2px 0px 0px 2px;
+}
+
+.compass .race .footer .button[data-enabled="0"],
+.compass .race .footer .button[data-enabled="0"]:hover,
+.compass .race .footer .button[data-enabled="0"]:active {
+  pointer-events:none;
+  color:#7dbbca;
+  text-shadow:1px 1px 0px #fff;
+}
+
+.compass .race .footer .button {
+  width:34px;
+  background-position:-56px -200px;
+}
+
+.compass .race .footer .button:hover {
+  background-position-x:-92px;
+}
+
+.compass .race .footer .button:hover:active {
+  background-position-x:-128px;
+}
+
+.compass .race .footer .button[data-enabled="0"],
+.compass .race .footer .button[data-enabled="0"]:hover,
+.compass .race .footer .button[data-enabled="0"]:active {
+  background-position-x:-164px;
 }
 
 .contextmenu {
