@@ -51,7 +51,8 @@ body {
 }
 
 .compass .map,
-.compass .icons {
+.compass .icons,
+.compass svg.navigation {
   position:absolute;
   left:0px;
   top:0px;
@@ -98,6 +99,36 @@ body {
   top:227px;
 }
 
+.compass svg.navigation {
+  display:none;
+}
+
+.compass[data-mode="race"] svg.navigation {
+  display:block;
+}
+
+.compass svg.navigation polyline {
+  stroke-width:3;
+  fill:none;
+}
+
+.compass svg.navigation polyline[data-id="0"] {
+  stroke-width:5;
+  stroke:#666;
+}
+
+.compass svg.navigation polyline[data-id="1"] {
+  stroke:#b0e9b0;
+}
+
+.compass svg.navigation polyline[data-id="2"] {
+  stroke:#df9927;
+}
+
+.compass svg.navigation polyline[data-id="3"] {
+  stroke:#e9705e;
+}
+
 .compass .tile .icon {
   display:none;
   position:absolute;
@@ -112,19 +143,22 @@ body {
   transform:rotate(var(--heading));
 }
 
-.compass .tile .icon[data-type="hangout"] {
+.compass .tile .icon[data-type="hangout"],
+.compass[data-mode="race"] .tile .icon[data-type="waypoint3"] {
   display:block;
   background-position-y:0px;
 }
 
 
 .compass .tile .icon[data-type="neighborhood"],
-.compass .tile .icon[data-type="funzone"] {
+.compass .tile .icon[data-type="funzone"],
+.compass[data-mode="race"] .tile .icon[data-type="waypoint2"] {
   display:block;
   background-position-y:-6px;
 }
 
-.compass .tile .icon[data-type="pointofinterest"] {
+.compass .tile .icon[data-type="pointofinterest"],
+.compass[data-mode="race"] .tile .icon[data-type="waypoint1"] {
   display:block;
   background-position-y:-12px;
 }
@@ -269,6 +303,10 @@ body {
   border-radius:4px;
   font-size:10px;
   color:#333;
+}
+
+.compass[data-mode="race"] .altimeter {
+  display:none;
 }
 
 .compass .blocker[data-id="close"] {

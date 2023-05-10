@@ -15,6 +15,10 @@ There.init({
       width: 200,
       height: 200,
     });
+    There.fsCommand('setWidthHeight', {
+      width: 200,
+      height: 200,
+    });
     There.fsCommand('setTextureBitDepth', {
       depth: 32,
     });
@@ -93,51 +97,7 @@ There.init({
     } catch(error) {
       return;
     }
-    There.calcLocation(There.data.location, position, {
-      onPosition: function(position) {
-        let height = Math.floor(Math.max(Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z) - 6000000.0, 0.0));
-        let text = '';
-        if (height < 1000) {
-          text = Number(height).toLocaleString('en-us', {
-            maximumFractionDigits: 0,
-          }) + 'm';
-        } else {
-          let digits = Math.max(0, 6 - height.toString().length);
-          text = Number(height / 1000.0).toLocaleString('en-us', {
-            minimumFractionDigits: digits,
-            maximumFractionDigits: digits,
-          }) + 'km';
-        }
-        $('.compass .altimeter span').text(text);
-      },
-      onOffset: function(offset) {
-        $('.compass .main').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`)
-      },
-      onTile: function(tile) {
-        for (let x in [0, 1, 2]) {
-          for (let y in [0, 1, 2]) {
-            let offsetTile = {
-              x: tile.x + (x - 1),
-              y: tile.y + (y - 1),
-            };
-            let url = There.getTileUrl(offsetTile);
-            $(`.compass .map .tile[data-x="${x}"][data-y="${y}"]`).css('background-image', `url(${url})`);
-            let divIconsTile = $(`.compass .icons .tile[data-x="${x}"][data-y="${y}"]`);
-            $(divIconsTile).empty();
-            let places = There.getTilePlaces(offsetTile);
-            for (let place of places) {
-              let divIcon = $('<div class="icon"></div>');
-              $(divIcon).css('left', `${Number(place.offset[0])}px`).css('top', `${Number(place.offset[1])}px`);
-              $(divIcon).attr('data-type', place.type).attr('title', place.name);
-              $(divIcon).on('mouseover', function(event) {
-                There.playSound('control rollover');
-              });
-              $(divIconsTile).append($(divIcon));
-            }
-          }
-        }
-      },
-    });
+    There.calcLocation(position);
   },
 
   fetchPlaces: function() {
@@ -152,12 +112,13 @@ There.init({
     });
   },
 
-  calcLocation: function(location, position, events) {
+  calcLocation: function(position) {
+    let location = There.data.location;
     if (location.position?.x == position.x && location.position?.y == position.y && location.position?.z == position.z) {
       return;
     }
     location.position = position;
-    events?.onPosition?.(position);
+    There.updateLocationPosition();
     var longitude = 0.000109861473792 * position.x + 4.11852320371869;
     var latitude;
     if (position.y < 1000000.0) {
@@ -167,25 +128,109 @@ There.init({
     }
     let scale = 1 << There.data.zoom;
     let sinY = Math.min(Math.max(Math.sin(latitude * Math.PI / 180.0), -0.9999), 0.9999);
-    let point = {
+    let point1 = {
       x: scale * (0.5 + longitude / 360.0),
       y: scale * (0.5 - Math.log((1.0 + sinY) / (1.0 - sinY)) / (4.0 * Math.PI)),
     };
+    let point2 = {
+      x: Math.floor(point1.x * 256.0),
+      y: Math.floor(point1.y * 256.0),
+    };
+    if (location.point?.x != point2.x || location.point?.y != point2) {
+      location.point = point2;
+      There.updateLocationPoint();
+    }
     let offset = {
-      x: 128 - (Math.floor(point.x * 256.0) % 256),
-      y: 128 - (Math.floor(point.y * 256.0) % 256),
+      x: 128 - (point2.x % 256),
+      y: 128 - (point2.y % 256),
     };
     if (location.offset?.x != offset.x || location.offset?.y != offset.y) {
       location.offset = offset;
-      events?.onOffset?.(offset);
+      There.updateLocationOffset();
     }
     let tile = {
-      x: Math.floor(point.x),
-      y: Math.floor(point.y),
+      x: Math.floor(point1.x),
+      y: Math.floor(point1.y),
     };
     if (location.tile?.x != tile.x || location.tile?.y != tile.y) {
       location.tile = tile;
-      events?.onTile?.(tile);
+      There.updateLocationTile();
+    }
+  },
+
+  updateLocationPosition: function() {
+    let position = There.data.location.position;
+    if (position == undefined) {
+      return;
+    }
+    let height = Math.floor(Math.max(Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z) - 6000000.0, 0.0));
+    let text = '';
+    if (height < 1000) {
+      text = Number(height).toLocaleString('en-us', {
+        maximumFractionDigits: 0,
+      }) + 'm';
+    } else {
+      let digits = Math.max(0, 6 - height.toString().length);
+      text = Number(height / 1000.0).toLocaleString('en-us', {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+      }) + 'km';
+    }
+    $('.compass .altimeter span').text(text);
+  },
+
+  updateLocationPoint: function() {
+    let point = There.data.location.point;
+    if (point == undefined) {
+      return;
+    }
+    $('.compass svg.navigation').attr('viewBox', `${point.x - 100} ${point.y - 100} 200 200`);
+    if ($('.compass').attr('data-mode') == 'race') {
+      let navigation = There.data.navigation;
+      if (navigation != undefined) {
+        navigation = [`${point.x},${point.y}`].concat(navigation);
+        $(`.compass svg.navigation polyline[data-id="0"]`).attr('points', navigation.join(' '));
+        $(`.compass svg.navigation polyline[data-id="1"]`).attr('points', navigation.slice(0, 2).join(' '));
+        $(`.compass svg.navigation polyline[data-id="2"]`).attr('points', navigation.slice(1, 3).join(' '));
+        $(`.compass svg.navigation polyline[data-id="3"]`).attr('points', navigation.slice(2).join(' '));
+      }
+    }
+  },
+
+  updateLocationOffset: function() {
+    let offset = There.data.location.offset;
+    if (offset == undefined) {
+      return;
+    }
+    $('.compass .main').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`)
+  },
+
+  updateLocationTile: function() {
+  let tile = There.data.location.tile;
+    if (tile == undefined) {
+      return;
+    }
+    for (let x in [0, 1, 2]) {
+      for (let y in [0, 1, 2]) {
+        let offsetTile = {
+          x: tile.x + (x - 1),
+          y: tile.y + (y - 1),
+        };
+        let url = There.getTileUrl(offsetTile);
+        $(`.compass .map .tile[data-x="${x}"][data-y="${y}"]`).css('background-image', `url(${url})`);
+        let divIconsTile = $(`.compass .icons .tile[data-x="${x}"][data-y="${y}"]`);
+        $(divIconsTile).empty();
+        let icons = There.getTileIcons(offsetTile);
+        for (let icon of icons) {
+          let divIcon = $('<div class="icon"></div>');
+          $(divIcon).css('left', `${Number(icon.offset[0])}px`).css('top', `${Number(icon.offset[1])}px`);
+          $(divIcon).attr('data-type', icon.type).attr('title', icon.name);
+          $(divIcon).on('mouseover', function(event) {
+            There.playSound('control rollover');
+          });
+          $(divIconsTile).append($(divIcon));
+        }
+      }
     }
   },
 
@@ -213,7 +258,10 @@ There.init({
     return `https://${There.variables.there_webapps}/gmap/water.png`;
   },
 
-  getTilePlaces: function(tile) {
+  getTileIcons: function(tile) {
+    if ($('.compass').attr('data-mode') == 'race') {
+      return There.data.waypoints[tile.x]?.[tile.y] ?? [];
+    }
     return There.data.places[tile.x]?.[tile.y] ?? [];
   },
 
@@ -384,14 +432,16 @@ There.init({
       },
       dataType: 'json',
       success: function(data) {
-        There.setupRace(data.track);
+        There.data.track = data.track;
+        There.data.track.index = 0;
+        There.setupRace();
       },
     });
   },
 
-  setupRace: function(track) {
+  setupRace: function() {
+    let track = There.data.track;
     $('.compass').attr('data-mode', 'race');
-    $('.compass .race').data('track', track).attr('data-waypoint', '0');
     $('.compass .race .title').text(`${track.name} by ${track.avatar.name}`);
     $('.compass .race .button[data-id="go"]').off('click').on('click', function() {
       There.teleport(track.teleport);
@@ -409,22 +459,43 @@ There.init({
   },
 
   setupRaceWaypoint: function() {
-    let track = $('.compass .race').data('track');
-    let index = Number($('.compass .race').attr('data-waypoint'));
-    if (index < track.waypoints.length) {
-      let waypoint = track.waypoints[index];
+    let track = There.data.track;
+    There.data.waypoints = {};
+    There.data.navigation = [];
+    for (let i = track.index; i < track.waypoints.length; i++) {
+      let waypoint = track.waypoints[i];
+      let id = Math.min(i - track.index + 1, 3);
+      waypoint.type = `waypoint${id}`;
+      let tileX = waypoint.tile[0];
+      let tileY = waypoint.tile[1];
+      let pointX = tileX * 256 + waypoint.offset[0];
+      let pointY = tileY * 256 + waypoint.offset[1];
+      if (There.data.waypoints[tileX] == undefined) {
+        There.data.waypoints[tileX] = {};
+      }
+      if (There.data.waypoints[tileX][tileY] == undefined) {
+        There.data.waypoints[tileX][tileY] = [];
+      }
+      There.data.waypoints[tileX][tileY].unshift(waypoint);
+      There.data.navigation.push(`${pointX},${pointY}`);
+    }
+    if (track.index < track.waypoints.length) {
+      let waypoint = track.waypoints[track.index];
       $('.compass .race').attr('data-active', '1');
-      $('.compass .race .body[data-id="directions"] span:eq(0)').html(index < track.waypoints.length - 1 ? '&#x2691;' : '&#x272a;');
+      $('.compass .race .body[data-id="directions"] span:eq(0)').html(track.index < track.waypoints.length - 1 ? '&#x2691;' : '&#x272a;');
       $('.compass .race .body[data-id="directions"] span:eq(1)').text(waypoint.name);
-      $('.compass .race .button[data-id="go"]').attr('data-enabled', index > 0 || !track.teleport ? '0' : '1');
-      $('.compass .race .button[data-id="close"]').attr('data-enabled', index > 0 ? '0' : '1');
-      $('.compass .race .button[data-id="expand"]').attr('data-enabled', index > 0 ? '0' : '1');
+      $('.compass .race .button[data-id="go"]').attr('data-enabled', track.index > 0 || !track.teleport ? '0' : '1');
+      $('.compass .race .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');
+      $('.compass .race .button[data-id="expand"]').attr('data-enabled', track.index > 0 ? '0' : '1');
     } else {
       $('.compass .race').attr('data-active', '0');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', !track.teleport ? '0' : '1');
       $('.compass .race .button[data-id="close"]').attr('data-enabled', '1');
       $('.compass .race .button[data-id="expand"]').attr('data-enabled', '1');
     }
+    There.updateLocationPoint();
+    There.updateLocationOffset();
+    There.updateLocationTile();
   },
 
   fetchClientWindowsXml: function(callback) {
