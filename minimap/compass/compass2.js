@@ -4,10 +4,6 @@ There.init({
     places: {},
     tracks: {},
     zoom: 10,
-    windows: {
-      version: 0,
-      names: {},
-    },
   },
 
   onReady: function() {
@@ -163,20 +159,25 @@ There.init({
     if (position == undefined) {
       return;
     }
-    let height = Math.floor(Math.max(Math.sqrt(position.x * position.x + position.y * position.y + position.z * position.z) - 6000000.0, 0.0));
-    let text = '';
-    if (height < 1000) {
-      text = Number(height).toLocaleString('en-us', {
-        maximumFractionDigits: 0,
-      }) + 'm';
-    } else {
-      let digits = Math.max(0, 6 - height.toString().length);
-      text = Number(height / 1000.0).toLocaleString('en-us', {
-        minimumFractionDigits: digits,
-        maximumFractionDigits: digits,
-      }) + 'km';
+    {
+      let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - 6000000.0, 0.0));
+      $('.compass .altimeter span').text(There.getDistanceText(height));
     }
-    $('.compass .altimeter span').text(text);
+    {
+      if ($('.compass').attr('data-mode') == 'race' && There.data.track != undefined) {
+        let track = There.data.track;
+        if (track.index < track.waypoints.length) {
+          let waypoint = track.waypoints[track.index];
+          let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - position.x) ** 2 + (waypoint.position[1] - position.y) ** 2), 0.0));
+          $('.compass .race .body[data-id="directions"] ul li:eq(0) span:eq(1)').text(There.getDistanceText(distance));
+          if (distance < 25) {
+            There.setNamedTimer('track-waypoint', 500, function() {
+              There.passRaceWaypoint();
+            });
+          }
+        }
+      }
+    }
   },
 
   updateLocationPoint: function() {
@@ -234,6 +235,19 @@ There.init({
     }
   },
 
+  getDistanceText: function(value) {
+    if (value < 1000) {
+      return Number(value).toLocaleString('en-us', {
+        maximumFractionDigits: 0,
+      }) + 'm';
+    }
+    let digits = Math.max(0, 6 - value.toString().length);
+    return Number(value / 1000.0).toLocaleString('en-us', {
+      minimumFractionDigits: digits,
+      maximumFractionDigits: digits,
+    }) + 'km';
+  },
+
   getTileUrl: function(tile) {
     let zoom = There.data.zoom;
     let url = `https://${There.variables.there_webapps}/gmap/${zoom}-0-0/${zoom}-${tile.y}-${tile.x}.png`;
@@ -272,6 +286,7 @@ There.init({
   },
 
   fetchTracks: function() {
+    delete There.data.track;
     if ($('.compass .pick').attr('data-loading') == 1) {
       return;
     }
@@ -371,7 +386,9 @@ There.init({
           There.playSound('menu item activate');
           There.clearContextMenu();
           if (menu.action == 'go') {
-            There.teleport(entry.teleport);
+            There.fsCommand('TeleportToDoid', {
+              doid: entry.teleport,
+            });
           }
           if (menu.action == 'join') {
             There.fetchTrack(entry.id);
@@ -397,31 +414,6 @@ There.init({
     };
   },
 
-  teleport: function(id) {
-    if (!id) {
-      return;
-    }
-    let url = `https://webapps.prod.there.com/goto/goto?obj=${id}`;
-    There.fetchClientWindowsXml(function() {
-      There.fsCommand('browser', url);
-      setTimeout(function() {
-        There.fetchClientWindowsXml(function() {
-          for (let name of Object.keys(There.data.windows.names).filter(k => There.data.windows.names[k] == There.data.windows.version)) {
-            There.fetchClientWindowCloseButtonXml(name, function() {
-              There.fetch({
-                path: '/ScriptHook/Invoke',
-                query: {
-                  Path: `/client/windows/${name}/close`,
-                },
-                dataType: 'xml',
-              });
-            });
-          }
-        });
-      }, 2000);
-    });
-  },
-
   fetchTrack: function(id) {
     $.ajax({
       url: 'https://www.hmph.us/there/api/minimap/track/',
@@ -441,16 +433,30 @@ There.init({
 
   setupRace: function() {
     let track = There.data.track;
+    if (There.data.audio == undefined) {
+      let waypointAudio = new Audio('/resources/gamekit/racekit/right_gate.ogg');
+      waypointAudio.volume = 0.35;
+      let finishAudio = new Audio('/resources/gamekit/racekit/race_over.ogg');
+      finishAudio.volume = 0.35;
+      There.data.audio = {
+        waypoint: waypointAudio,
+        finish: finishAudio,
+      };
+    }
     $('.compass').attr('data-mode', 'race');
     $('.compass .race .title').text(`${track.name} by ${track.avatar.name}`);
     $('.compass .race .button[data-id="go"]').off('click').on('click', function() {
-      There.teleport(track.teleport);
+      if (track.teleport) {
+        There.fsCommand('TeleportToDoid', {
+          doid: track.teleport,
+        });
+      }
     });
     $('.compass .race .button[data-id="leave"]').off('click').on('click', function() {
       $('.compass').attr('data-mode', 'pick');
       $('.compass .race').attr('data-active', '0');
-      $('.compass .race .button[data-id="close"]').attr('data-enabled', '1');
-      $('.compass .race .button[data-id="expand"]').attr('data-enabled', '1');
+      $('.compass .button[data-id="close"]').attr('data-enabled', '1');
+      $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
     });
     $('.compass .race .button[data-id="about"]').off('click').on('click', function() {
       There.fsCommand('browser', track.url);
@@ -462,103 +468,68 @@ There.init({
     let track = There.data.track;
     There.data.waypoints = {};
     There.data.navigation = [];
-    for (let i = track.index; i < track.waypoints.length; i++) {
-      let waypoint = track.waypoints[i];
-      let id = Math.min(i - track.index + 1, 3);
-      waypoint.type = `waypoint${id}`;
-      let tileX = waypoint.tile[0];
-      let tileY = waypoint.tile[1];
-      let pointX = tileX * 256 + waypoint.offset[0];
-      let pointY = tileY * 256 + waypoint.offset[1];
-      if (There.data.waypoints[tileX] == undefined) {
-        There.data.waypoints[tileX] = {};
-      }
-      if (There.data.waypoints[tileX][tileY] == undefined) {
-        There.data.waypoints[tileX][tileY] = [];
-      }
-      There.data.waypoints[tileX][tileY].unshift(waypoint);
-      There.data.navigation.push(`${pointX},${pointY}`);
-    }
+    let ul = $('.compass .race .body[data-id="directions"] ul');
+    $(ul).empty();
     if (track.index < track.waypoints.length) {
-      let waypoint = track.waypoints[track.index];
+      for (let i = track.index; i < track.waypoints.length; i++) {
+        let waypoint = track.waypoints[i];
+        let id = Math.min(i - track.index + 1, 3);
+        waypoint.type = `waypoint${id}`;
+        let tileX = waypoint.tile[0];
+        let tileY = waypoint.tile[1];
+        let pointX = tileX * 256 + waypoint.offset[0];
+        let pointY = tileY * 256 + waypoint.offset[1];
+        if (There.data.waypoints[tileX] == undefined) {
+          There.data.waypoints[tileX] = {};
+        }
+        if (There.data.waypoints[tileX][tileY] == undefined) {
+          There.data.waypoints[tileX][tileY] = [];
+        }
+        There.data.waypoints[tileX][tileY].unshift(waypoint);
+        There.data.navigation.push(`${pointX},${pointY}`);
+        let distanceText = '';
+        if (i > 0) {
+          let waypoint2 = track.waypoints[i - 1];
+          let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - waypoint2.position[0]) ** 2 + (waypoint.position[1] - waypoint2.position[1]) ** 2), 0.0));
+          distanceText = There.getDistanceText(distance);
+
+        }
+        let li = $('<li>');
+        $('<span>').text(`${waypoint.name} (`).appendTo($(li));
+        $('<span>').text(distanceText).appendTo($(li));
+        $('<span>').text(')').appendTo($(li));
+        $(ul).append($(li));
+      }
       $('.compass .race').attr('data-active', '1');
-      $('.compass .race .body[data-id="directions"] span:eq(0)').html(track.index < track.waypoints.length - 1 ? '&#x2691;' : '&#x272a;');
-      $('.compass .race .body[data-id="directions"] span:eq(1)').text(waypoint.name);
       $('.compass .race .button[data-id="go"]').attr('data-enabled', track.index > 0 || !track.teleport ? '0' : '1');
-      $('.compass .race .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');
-      $('.compass .race .button[data-id="expand"]').attr('data-enabled', track.index > 0 ? '0' : '1');
+      $('.compass .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');
+      $('.compass .button[data-id="expand"]').attr('data-enabled', track.index > 0 ? '0' : '1');
     } else {
       $('.compass .race').attr('data-active', '0');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', !track.teleport ? '0' : '1');
-      $('.compass .race .button[data-id="close"]').attr('data-enabled', '1');
-      $('.compass .race .button[data-id="expand"]').attr('data-enabled', '1');
+      $('.compass .button[data-id="close"]').attr('data-enabled', '1');
+      $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
     }
+    There.updateLocationPosition();
     There.updateLocationPoint();
     There.updateLocationOffset();
     There.updateLocationTile();
   },
 
-  fetchClientWindowsXml: function(callback) {
-    There.data.ident = Math.random();
-    There.fetch({
-      path: '/ScriptHook/Get',
-      query: {
-        Path: '/client/windows',
-      },
-      dataType: 'xml',
-      success: There.onClientWindowsXml,
-      complete: callback,
-    });
-  },
-
-  onClientWindowsXml: function(xml) {
-    const xmlAnswer = xml.getElementsByTagName('Answer')[0];
-    const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
-    if (xmlResult.childNodes[0].nodeValue != 1) {
+  passRaceWaypoint: function() {
+    if ($('.compass').attr('data-mode') != 'race' || There.data.track == undefined) {
       return;
     }
-    const xmlVersion = xmlAnswer.getElementsByTagName('Version')[0];
-    There.data.windows.version = xmlVersion.childNodes[0].nodeValue;
-    const xmlNode = xmlAnswer.getElementsByTagName('Node')[0];
-    const xmlChildren = xmlNode.getElementsByTagName('Children')[0];
-    for (let xmlChild of xmlChildren.childNodes) {
-      if (xmlChild.nodeName == 'Child') {
-        const name = xmlChild.getElementsByTagName('Name')[0].childNodes[0].nodeValue;
-        if (!There.data.windows.names.hasOwnProperty(name)) {
-          There.data.windows.names[name] = There.data.windows.version;
-        }
+    let track = There.data.track;
+    if (track.index < track.waypoints.length) {
+      track.index++;
+      There.setupRaceWaypoint();
+      if (track.index == track.waypoints.length) {
+        There.data.audio.finish.play();
+      } else {
+        There.data.audio.waypoint.play();
       }
     }
-  },
-
-  fetchClientWindowCloseButtonXml: function(name, callback) {
-    There.data.ident = Math.random();
-    There.fetch({
-      path: '/ScriptHook/Get',
-      query: {
-        Path: `/client/windows/${name}/hasCloseButton`,
-      },
-      dataType: 'xml',
-      success: function(xml) {
-        if (There.onClientWindowCloseButtonXml(xml)) {
-          callback();
-        }
-      },
-    });
-  },
-
-  onClientWindowCloseButtonXml: function(xml) {
-    const xmlAnswer = xml.getElementsByTagName('Answer')[0];
-    const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
-    if (xmlResult.childNodes[0].nodeValue != 1) {
-      return false;
-    }
-    const xmlNode = xmlAnswer.getElementsByTagName('Node')[0];
-    const xmlValue = xmlNode.getElementsByTagName('Value')[0];
-    if (xmlValue.childNodes[0].nodeValue != 1) {
-      return false;
-    }
-    return true;
   },
 });
 
@@ -606,26 +577,15 @@ $(document).ready(function() {
   });
 
   $('.compass .button[data-id="close"]').on('click', function(event) {
-    if (event.shiftKey) {
-      There.fsCommand('openDevTools');
-    } else {
-      There.fsCommand('closeWindow');
-    }
+    There.fsCommand('closeWindow');
   });
 
   $('.compass .button[data-id="expand"]').on('click', function(event) {
-    if (event.shiftKey) {
-      There.fsCommand('newChildPluginWindow', {
-        id: 'There_gpsd',
-        url: `http://${There.variables.there_resourceshost}/Resources/Compass/gpsd.swf`,
-      });
+    if ($('.compass').attr('data-mode') == 'map') {
+      $('.compass').attr('data-mode', 'pick');
+      There.fetchTracks();
     } else {
-      if ($('.compass').attr('data-mode') == 'map') {
-        $('.compass').attr('data-mode', 'pick');
-        There.fetchTracks();
-      } else {
-        $('.compass').attr('data-mode', 'map');
-      }
+      $('.compass').attr('data-mode', 'map');
     }
   });
 });

@@ -123,10 +123,12 @@ body {
 
 .compass svg.navigation polyline[data-id="2"] {
   stroke:#df9927;
+  stroke-dasharray:6 2;
 }
 
 .compass svg.navigation polyline[data-id="3"] {
   stroke:#e9705e;
+  stroke-dasharray:6 2;
 }
 
 .compass .tile .icon {
@@ -298,11 +300,14 @@ body {
 .compass .altimeter div {
   display:inline-block;
   padding:0px 4px 1px 4px;
-  background-color:#b0f6fcc0;
   border:1px solid #666;
   border-radius:4px;
   font-size:10px;
   color:#333;
+}
+
+.compass .altimeter div {
+  background-color:#b0f6fcc0;
 }
 
 .compass[data-mode="race"] .altimeter {
@@ -374,6 +379,9 @@ body {
   background-position-y:-207px;
 }
 
+.compass[data-mode="race"] .button[data-id="expand"][data-enabled="0"],
+.compass[data-mode="race"] .button[data-id="expand"][data-enabled="0"]:hover,
+.compass[data-mode="race"] .button[data-id="expand"][data-enabled="0"]:active,
 .compass[data-ready="0"] .button[data-id="expand"] {
   display:none;
 }
@@ -454,6 +462,7 @@ body {
   bottom:4px;
   border:1px solid #666;
   background-color:#fff;
+  overflow:hidden;
 }
 
 .compass .race .title {
@@ -467,6 +476,24 @@ body {
 .compass .race .body {
   padding:2px;
   font-size:11px;
+  color:#333;
+}
+
+.compass .race:not([data-active="1"]) .body {
+  display:none;
+}
+
+.compass .race .body ul {
+  margin:0px;
+  padding-inline-start:14px;
+  list-style-type:"\2691  ";
+}
+
+.compass .race .body ul li {
+  color:#ccc;
+}
+
+.compass .race .body ul li:nth-of-type(1) {
   color:#333;
 }
 
