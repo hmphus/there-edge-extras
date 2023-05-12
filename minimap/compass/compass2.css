@@ -479,13 +479,17 @@ body {
   color:#333;
 }
 
-.compass .race:not([data-active="1"]) .body {
+.compass .race[data-active="0"] .body[data-id="navigation"] {
+  display:none;
+}
+
+.compass .race[data-active="1"] .body[data-id="summary"] {
   display:none;
 }
 
 .compass .race .body ul {
   margin:0px;
-  padding-inline-start:14px;
+  padding-inline-start:12px;
   list-style-type:"\2691  ";
 }
 
@@ -556,6 +560,15 @@ body {
 .compass .race .footer .button[data-enabled="0"]:hover,
 .compass .race .footer .button[data-enabled="0"]:active {
   background-position-x:-164px;
+}
+
+.compass .race[data-active="0"] .footer .button[data-id="go"],
+.compass .race[data-active="0"] .footer .button[data-id="leave"] {
+  display:none;
+}
+
+.compass .race[data-active="1"] .footer .button[data-id="done"] {
+  display:none;
 }
 
 .contextmenu {

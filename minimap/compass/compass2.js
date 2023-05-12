@@ -11,18 +11,14 @@ There.init({
       width: 200,
       height: 200,
     });
-    There.fsCommand('setWidthHeight', {
-      width: 200,
-      height: 200,
-    });
     There.fsCommand('setTextureBitDepth', {
       depth: 32,
     });
     new ResizeObserver(function(entries) {
       const rect = entries[0].contentRect;
       There.fsCommand('setWidthHeight', {
-        width: rect.width,
-        height: rect.height,
+        width: Math.max(rect.width, 200),
+        height: Math.max(rect.height, 50),
       });
     }).observe($('.compass')[0]);
   },
@@ -163,18 +159,16 @@ There.init({
       let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - 6000000.0, 0.0));
       $('.compass .altimeter span').text(There.getDistanceText(height));
     }
-    {
-      if ($('.compass').attr('data-mode') == 'race' && There.data.track != undefined) {
-        let track = There.data.track;
-        if (track.index < track.waypoints.length) {
-          let waypoint = track.waypoints[track.index];
-          let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - position.x) ** 2 + (waypoint.position[1] - position.y) ** 2), 0.0));
-          $('.compass .race .body[data-id="directions"] ul li:eq(0) span:eq(1)').text(There.getDistanceText(distance));
-          if (distance < 25) {
-            There.setNamedTimer('track-waypoint', 500, function() {
-              There.passRaceWaypoint();
-            });
-          }
+    if ($('.compass').attr('data-mode') == 'race' && There.data.track != undefined) {
+      let track = There.data.track;
+      if (track.index < track.waypoints.length) {
+        let waypoint = track.waypoints[track.index];
+        let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - position.x) ** 2 + (waypoint.position[1] - position.y) ** 2), 0.0));
+        $('.compass .race .body[data-id="navigation"] ul li:eq(0) span:eq(1)').text(There.getDistanceText(distance));
+        if (distance < 50) {
+          There.setNamedTimer('track-waypoint', 500, function() {
+            There.passRaceWaypoint();
+          });
         }
       }
     }
@@ -248,6 +242,31 @@ There.init({
     }) + 'km';
   },
 
+  getDurationText: function(value) {
+    let text = '';
+    value = Math.floor(value / 1000);
+    let seconds = value % 60;
+    if (seconds > 0 || value == 0) {
+      text = `${seconds} second${seconds == 1 ? '' : 's'}`;
+    }
+    value = (value - seconds) / 60;
+    let minutes = value % 60;
+    if (minutes > 0) {
+      text = `${minutes} minute${minutes == 1 ? '' : 's'}${text.length == 0 ? '' : ' '}${text}`;
+    }
+    value = (value - minutes) / 60;
+    let hours = value % 24;
+    if (hours > 0) {
+      text = `${hours} hour${hours == 1 ? '' : 's'}${text.length == 0 ? '' : ' '}${text}`;
+    }
+    value = (value - hours) / 24;
+    let days = value;
+    if (days > 0) {
+      text = `${days} day${days == 1 ? '' : 's'}${text.length == 0 ? '' : ' '}${text}`;
+    }
+    return text;
+  },
+
   getTileUrl: function(tile) {
     let zoom = There.data.zoom;
     let url = `https://${There.variables.there_webapps}/gmap/${zoom}-0-0/${zoom}-${tile.y}-${tile.x}.png`;
@@ -286,7 +305,6 @@ There.init({
   },
 
   fetchTracks: function() {
-    delete There.data.track;
     if ($('.compass .pick').attr('data-loading') == 1) {
       return;
     }
@@ -433,6 +451,7 @@ There.init({
 
   setupRace: function() {
     let track = There.data.track;
+    track.time = Date.now();
     if (There.data.audio == undefined) {
       let waypointAudio = new Audio('/resources/gamekit/racekit/right_gate.ogg');
       waypointAudio.volume = 0.35;
@@ -454,9 +473,11 @@ There.init({
     });
     $('.compass .race .button[data-id="leave"]').off('click').on('click', function() {
       $('.compass').attr('data-mode', 'pick');
-      $('.compass .race').attr('data-active', '0');
-      $('.compass .button[data-id="close"]').attr('data-enabled', '1');
-      $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
+      There.exitRace();
+    });
+    $('.compass .race .button[data-id="done"]').off('click').on('click', function() {
+      $('.compass').attr('data-mode', 'map');
+      There.exitRace();
     });
     $('.compass .race .button[data-id="about"]').off('click').on('click', function() {
       There.fsCommand('browser', track.url);
@@ -464,13 +485,22 @@ There.init({
     There.setupRaceWaypoint();
   },
 
+  exitRace: function() {
+    delete There.data.track;
+      $('.compass .race').attr('data-active', '0');
+      $('.compass .button[data-id="close"]').attr('data-enabled', '1');
+      $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
+      $('.compass .race .body[data-id="summary"]').text('');
+      $('.compass .race .body[data-id="navigation"] ul').empty();
+  },
+
   setupRaceWaypoint: function() {
     let track = There.data.track;
     There.data.waypoints = {};
     There.data.navigation = [];
-    let ul = $('.compass .race .body[data-id="directions"] ul');
-    $(ul).empty();
     if (track.index < track.waypoints.length) {
+      let ul = $('.compass .race .body[data-id="navigation"] ul');
+      $(ul).empty();
       for (let i = track.index; i < track.waypoints.length; i++) {
         let waypoint = track.waypoints[i];
         let id = Math.min(i - track.index + 1, 3);
@@ -505,6 +535,7 @@ There.init({
       $('.compass .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');
       $('.compass .button[data-id="expand"]').attr('data-enabled', track.index > 0 ? '0' : '1');
     } else {
+      $('.compass .race .body[data-id="summary"]').text(`You reached the goal in ${There.getDurationText(Date.now() - track.time)}.`);
       $('.compass .race').attr('data-active', '0');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', !track.teleport ? '0' : '1');
       $('.compass .button[data-id="close"]').attr('data-enabled', '1');
@@ -586,6 +617,7 @@ $(document).ready(function() {
       There.fetchTracks();
     } else {
       $('.compass').attr('data-mode', 'map');
+      There.exitRace();
     }
   });
 });
