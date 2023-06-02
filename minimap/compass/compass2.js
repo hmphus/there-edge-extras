@@ -17,8 +17,8 @@ There.init({
     new ResizeObserver(function(entries) {
       const rect = entries[0].contentRect;
       There.fsCommand('setWidthHeight', {
-        width: Math.max(rect.width, 200),
-        height: Math.max(rect.height, 50),
+        width: Math.max(200, Math.ceil(rect.width)),
+        height: Math.max(50, Math.ceil(rect.height)),
       });
     }).observe($('.compass')[0]);
   },
@@ -56,6 +56,7 @@ There.init({
       There.variables.there_pilotdoid = doid;
       There.variables.there_pilotname = name;
       $('.compass').attr('data-ready', '1');
+      $('.compass .login span[data-id="name"]').text(name);
     }
   },
 
@@ -111,12 +112,15 @@ There.init({
     }
     location.position = position;
     There.updateLocationPosition();
-    var longitude = 0.000109861473792 * position.x + 4.11852320371869;
+    let normalizer = 6000000.0 / Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2);
+    let posX = position.x * normalizer;
+    let posY = position.y * normalizer;
+    var longitude = 0.000109861473792 * posX + 4.11852320371869;
     var latitude;
-    if (position.y < 1000000.0) {
-        latitude = 2.64704299694757e-11 * position.y * position.y + 0.0000284144760656428 * position.y - 75.0109756775465;
+    if (posY < 1000000.0) {
+        latitude = 2.64704299694757e-11 * posY * posY + 0.0000284144760656428 * posY - 75.0109756775465;
     } else {
-        latitude = -2.83863583089598e-09 * position.y * position.y + 0.0112260357825775 * position.y - 11028.605321244;
+        latitude = -2.83863583089598e-09 * posY * posY + 0.0112260357825775 * posY - 11028.605321244;
     }
     let scale = 1 << There.data.zoom;
     let sinY = Math.min(Math.max(Math.sin(latitude * Math.PI / 180.0), -0.9999), 0.9999);
@@ -593,6 +597,10 @@ $(document).ready(function() {
     There.clearContextMenu();
   });
 
+  $('.compass .login .link').on('click', function() {
+    There.fsCommand('browser', 'https://www.hmph.us/there/minimap/about/');
+  });
+
   $('.compass .blocker').on('mousedown', function(event) {
     event.stopPropagation();
   });
@@ -613,11 +621,39 @@ $(document).ready(function() {
 
   $('.compass .button[data-id="expand"]').on('click', function(event) {
     if ($('.compass').attr('data-mode') == 'map') {
-      $('.compass').attr('data-mode', 'pick');
-      There.fetchTracks();
+      // TODO: Goto pick if login token valid or already skipped
+      $('.compass').attr('data-mode', 'login');
+      There.fsCommand('getKeyboardFocus');
+      $('.compass .login input[type="text"]').val('').focus();
+      $('.compass .login .button[data-id="login"]').attr('data-enabled', '0');
+      $('.compass .login').attr('data-error', '0');
     } else {
       $('.compass').attr('data-mode', 'map');
       There.exitRace();
+    }
+  });
+
+  $('.compass .login .button[data-id="login"]').off('click').on('click', function() {
+  });
+
+  $('.compass .login .button[data-id="skip"]').off('click').on('click', function() {
+    $('.compass').attr('data-mode', 'pick');
+      There.fetchTracks();
+  });
+
+  $('.compass .login input[type="password"]').on('keydown keyup change input cut paste', function() {
+    const text = $(this).val();
+    $('.compass .login .button[data-id="login"]').attr('data-enabled', text != '' ? '1' : '0');
+    $('.compass .login').attr('data-error', '0');
+  }).on('click', function() {
+    if ($(this).is(':hidden') || $(this).is(':focus')) {
+      return;
+    }
+    There.fsCommand('getKeyboardFocus');
+    $(this).focus();
+  }).on('keypress', function(event) {
+    if(event.which == 13 && $(this).val() != '') {
+      $('.compass .login .button[data-id="login"]:not([data-enabled="0"])').trigger('click');
     }
   });
 });

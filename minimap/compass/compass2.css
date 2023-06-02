@@ -30,6 +30,10 @@ body {
   pointer-events:none;
 }
 
+.compass[data-mode="login"] {
+  height:370px;
+}
+
 .compass[data-mode="pick"] {
   height:400px;
 }
@@ -386,6 +390,89 @@ body {
   display:none;
 }
 
+.compass .login {
+  position:absolute;
+  left:0px;
+  top:200px;
+  right:0px;
+  bottom:0px;
+  display:none;
+}
+
+.compass[data-mode="login"] .login {
+  display:block;
+}
+
+.compass .login .panel {
+  position:absolute;
+  left:6px;
+  top:6px;
+  right:6px;
+  bottom:34px;
+  padding:6px;
+  border:1px solid #333;
+  background-color:#c4f0f8;
+  font-size:11px;
+  line-height:12px;
+}
+
+.compass .login .panel .link {
+  color:#069;
+  text-decoration:underline;
+  display:inline;
+}
+
+.compass .login .panel .link:hover {
+  text-decoration:none;
+}
+
+.compass .login .panel .error {
+  color:#ff6644;
+  display:none;
+}
+
+.compass .login[data-error="1"] .panel .link {
+  display:none;
+}
+
+.compass .login[data-error="1"] .panel .error {
+  display:inline;
+}
+
+.compass .login .panel .textbox {
+  position:absolute;
+  left:11px;
+  right:11px;
+  bottom:11px;
+  height:27px;
+  border:1px solid #666;
+  border-radius:5px;
+  background-image:url(compass2.png);
+  background-position:0px -233px;
+}
+
+.compass .login .panel .textbox input[type="password"] {
+  position:absolute;
+  left:3px;
+  top:4px;
+  width:calc(100% - 6px);
+  height:calc(100% - 8px);
+  box-sizing:border-box;
+  font-size:11px;
+  border:1px solid #666;
+  border-radius:0px;
+  outline:none;
+}
+
+.compass .login .panel .textbox input[type="password"]::selection {
+  color:#fff;
+  background-color:#000;
+}
+
+.compass .login .panel .textbox input[type="password"]::placeholder {
+  opacity:0.4;
+}
+
 .compass .pick {
   position:absolute;
   left:0px;
@@ -501,6 +588,7 @@ body {
   color:#333;
 }
 
+.compass .login .footer,
 .compass .race .footer {
   position:absolute;
   left:54px;
@@ -512,6 +600,7 @@ body {
   justify-content:flex-end;
 }
 
+.compass .login .footer .button,
 .compass .race .footer .button {
   display:inline-block;
   margin:0px 1px;
@@ -526,15 +615,20 @@ body {
   text-align:center;
 }
 
+.compass .login .footer .button:hover,
 .compass .race .footer .button:hover {
   text-shadow:1px 1px 1px #0006;
 }
 
+.compass .login .footer .button:hover:active,
 .compass .race .footer .button:hover:active {
   text-shadow:0px 0px 2px #0006;
   padding:2px 0px 0px 2px;
 }
 
+.compass .login .footer .button[data-enabled="0"],
+.compass .login .footer .button[data-enabled="0"]:hover,
+.compass .login .footer .button[data-enabled="0"]:active,
 .compass .race .footer .button[data-enabled="0"],
 .compass .race .footer .button[data-enabled="0"]:hover,
 .compass .race .footer .button[data-enabled="0"]:active {
@@ -543,19 +637,25 @@ body {
   text-shadow:1px 1px 0px #fff;
 }
 
+.compass .login .footer .button,
 .compass .race .footer .button {
   width:34px;
   background-position:-56px -200px;
 }
 
+.compass .login .footer .button:hover,
 .compass .race .footer .button:hover {
   background-position-x:-92px;
 }
 
+.compass .login .footer .button:hover:active,
 .compass .race .footer .button:hover:active {
   background-position-x:-128px;
 }
 
+.compass .login .footer .button[data-enabled="0"],
+.compass .login .footer .button[data-enabled="0"]:hover,
+.compass .login .footer .button[data-enabled="0"]:active,
 .compass .race .footer .button[data-enabled="0"],
 .compass .race .footer .button[data-enabled="0"]:hover,
 .compass .race .footer .button[data-enabled="0"]:active {
@@ -574,7 +674,7 @@ body {
 .contextmenu {
   display:none;
   position:absolute;
-  left:110px;
+  left:125px;
   top:74px;
   box-shadow:2px 2px 3px #0006;
   z-index:5;
@@ -591,6 +691,8 @@ body {
   background-color:#fff;
   font-size:11px;
   border:1px solid #666;
+  white-space:nowrap;
+  overflow:hidden;
 }
 
 .contextmenu .item:first-of-type {
