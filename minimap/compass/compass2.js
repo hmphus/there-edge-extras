@@ -4,6 +4,7 @@ There.init({
     places: {},
     tracks: {},
     zoom: 10,
+    skipped: false,
   },
 
   onReady: function() {
@@ -55,6 +56,7 @@ There.init({
     if (doid != 0 && name != '') {
       There.variables.there_pilotdoid = doid;
       There.variables.there_pilotname = name;
+      There.data.prefix = `hmph.mods.minimap.${doid}`;
       $('.compass').attr('data-ready', '1');
       $('.compass .login span[data-id="name"]').text(name);
     }
@@ -308,6 +310,50 @@ There.init({
     return (tile.x >= values[0]) && (tile.x < values[0] + values[1]) && (tile.y >= values[2]) && (tile.y < values[2] + values[3]);
   },
 
+  fetchLogin: function() {
+    if ($('.compass .login').attr('data-loading') == 1) {
+      return;
+    }
+    const password = $('.compass .login input[type="password"]').val();
+    if (password == '') {
+      return;
+    }
+    $('.compass .login').attr('data-loading', '1');
+    $.ajax({
+      url: 'https://www.hmph.us/there/api/minimap/login/',
+      method: 'POST',
+      data: {
+        avatar_name: There.variables.there_pilotname ?? '',
+        password: password,
+      },
+      dataType: 'json',
+      success: function(data) {
+        if (data.token != undefined) {
+          There.setToken(data.token);
+          $('.compass').attr('data-mode', 'pick');
+        } else {
+          $('.compass .login').attr('data-error', '1');
+        }
+      },
+      complete: function() {
+        $('.compass .login').attr('data-loading', '0');
+      },
+    });
+  },
+
+  setToken: function(token) {
+    if (There.data.prefix != undefined) {
+      window.localStorage.setItem(`${There.data.prefix}.token`, token);
+    }
+  },
+
+  getToken: function() {
+    if (There.data.prefix != undefined) {
+      return window.localStorage.getItem(`${There.data.prefix}.token`) ?? '';
+    }
+    return '';
+  },
+
   fetchTracks: function() {
     if ($('.compass .pick').attr('data-loading') == 1) {
       return;
@@ -317,6 +363,7 @@ There.init({
       url: 'https://www.hmph.us/there/api/minimap/tracks/',
       method: 'POST',
       data: {
+        token: There.getToken(),
         avatar_name: There.variables.there_pilotname ?? '',
       },
       dataType: 'json',
@@ -338,6 +385,13 @@ There.init({
         }
         There.data.tracks['*'] = data.tracks ?? [];
         There.setupPick();
+        if (data.token == null && !There.data.skipped) {
+          $('.compass').attr('data-mode', 'login');
+          There.fsCommand('getKeyboardFocus');
+          $('.compass .login input[type="text"]').val('').focus();
+          $('.compass .login .button[data-id="login"]').attr('data-enabled', '0');
+          $('.compass .login').attr('data-error', '0');
+        }
       },
       complete: function() {
         $('.compass .pick').attr('data-loading', '0');
@@ -441,6 +495,7 @@ There.init({
       url: 'https://www.hmph.us/there/api/minimap/track/',
       method: 'POST',
       data: {
+        token: There.getToken(),
         avatar_name: There.variables.there_pilotname ?? '',
         id: id,
       },
@@ -621,12 +676,8 @@ $(document).ready(function() {
 
   $('.compass .button[data-id="expand"]').on('click', function(event) {
     if ($('.compass').attr('data-mode') == 'map') {
-      // TODO: Goto pick if login token valid or already skipped
-      $('.compass').attr('data-mode', 'login');
-      There.fsCommand('getKeyboardFocus');
-      $('.compass .login input[type="text"]').val('').focus();
-      $('.compass .login .button[data-id="login"]').attr('data-enabled', '0');
-      $('.compass .login').attr('data-error', '0');
+    $('.compass').attr('data-mode', 'pick');
+      There.fetchTracks();
     } else {
       $('.compass').attr('data-mode', 'map');
       There.exitRace();
@@ -634,11 +685,13 @@ $(document).ready(function() {
   });
 
   $('.compass .login .button[data-id="login"]').off('click').on('click', function() {
+    $('.compass .login').attr('data-error', '0');
+    There.fetchLogin();
   });
 
   $('.compass .login .button[data-id="skip"]').off('click').on('click', function() {
+    There.data.skipped = true;
     $('.compass').attr('data-mode', 'pick');
-      There.fetchTracks();
   });
 
   $('.compass .login input[type="password"]').on('keydown keyup change input cut paste', function() {

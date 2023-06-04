@@ -626,6 +626,9 @@ body {
   padding:2px 0px 0px 2px;
 }
 
+.compass .login[data-loading="1"] .footer .button[data-id="login"],
+.compass .login[data-loading="1"] .footer .button[data-id="login"]:hover,
+.compass .login[data-loading="1"] .footer .button[data-id="login"]:active,
 .compass .login .footer .button[data-enabled="0"],
 .compass .login .footer .button[data-enabled="0"]:hover,
 .compass .login .footer .button[data-enabled="0"]:active,
