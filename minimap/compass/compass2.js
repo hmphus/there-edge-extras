@@ -306,7 +306,7 @@ There.init({
 
   testTile: function(tile, values) {
     let zoom = 1 << (There.data.zoom - 7);
-    values = values.map(v => v * zoom);
+    values = values.map((v) => v * zoom);
     return (tile.x >= values[0]) && (tile.x < values[0] + values[1]) && (tile.y >= values[2]) && (tile.y < values[2] + values[3]);
   },
 
@@ -373,15 +373,23 @@ There.init({
             text: 'Go',
             action: 'go',
             enabled: entry.teleport ? true : false,
+            visible: true,
           }, {
             text: 'Join',
             action: 'join',
             enabled: true,
+            visible: true,
+          }, {
+            text: 'Edit',
+            action: 'edit',
+            enabled: entry.edit_url ? true : false,
+            visible: data.is_editor && data.token ? true : false,
           }, {
             text: 'About',
             action: 'about',
             enabled: true,
-          }];
+            visible: true,
+          }].filter((e) => e.visible);
         }
         There.data.tracks['*'] = data.tracks ?? [];
         There.setupPick();
@@ -390,7 +398,7 @@ There.init({
           There.fsCommand('getKeyboardFocus');
           $('.compass .login input[type="text"]').val('').focus();
           $('.compass .login .button[data-id="login"]').attr('data-enabled', '0');
-          $('.compass .login').attr('data-error', '0');
+          $('.compass .login').attr('data-error', '0').attr('data-editor', data.is_editor ? '1' : '0');
         }
       },
       complete: function() {
@@ -469,8 +477,11 @@ There.init({
           if (menu.action == 'join') {
             There.fetchTrack(entry.id);
           }
+          if (menu.action == 'edit') {
+            There.fsCommand('browser', entry.edit_url);
+          }
           if (menu.action == 'about') {
-            There.fsCommand('browser', entry.url);
+            There.fsCommand('browser', entry.view_url);
           }
         });
       } else {

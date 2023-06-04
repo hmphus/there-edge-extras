@@ -439,6 +439,10 @@ body {
   display:inline;
 }
 
+.compass .login:not([data-editor="1"]) .panel span[data-id="edit"] {
+  display:none;
+}
+
 .compass .login .panel .textbox {
   position:absolute;
   left:11px;
