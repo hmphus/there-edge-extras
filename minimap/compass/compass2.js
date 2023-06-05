@@ -115,14 +115,20 @@ There.init({
     location.position = position;
     There.updateLocationPosition();
     let normalizer = 6000000.0 / Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2);
-    let posX = position.x * normalizer;
-    let posY = position.y * normalizer;
-    var longitude = 0.000109861473792 * posX + 4.11852320371869;
+    let coordinate = {
+      x: position.x * normalizer,
+      y: position.y * normalizer,
+    };
+    var longitude = 0.000109861473792 * coordinate.x + 4.11852320371869;
     var latitude;
-    if (posY < 1000000.0) {
-        latitude = 2.64704299694757e-11 * posY * posY + 0.0000284144760656428 * posY - 75.0109756775465;
+    if (coordinate.y < 1000000.0) {
+        latitude = 2.64704299694757e-11 * coordinate.y * coordinate.y + 0.0000284144760656428 * coordinate.y - 75.0109756775465;
     } else {
-        latitude = -2.83863583089598e-09 * posY * posY + 0.0112260357825775 * posY - 11028.605321244;
+        latitude = -2.83863583089598e-09 * coordinate.y * coordinate.y + 0.0112260357825775 * coordinate.y - 11028.605321244;
+    }
+    if (location.coordinate?.x != coordinate.x || location.coordinate?.y != coordinate) {
+      location.coordinate = coordinate;
+      There.updateLocationCoordinate();
     }
     let scale = 1 << There.data.zoom;
     let sinY = Math.min(Math.max(Math.sin(latitude * Math.PI / 180.0), -0.9999), 0.9999);
@@ -156,6 +162,14 @@ There.init({
     }
   },
 
+  updateLocation: function() {
+    There.updateLocationPosition();
+    There.updateLocationCoordinate();
+    There.updateLocationPoint();
+    There.updateLocationOffset();
+    There.updateLocationTile();
+  },
+
   updateLocationPosition: function() {
     let position = There.data.location.position;
     if (position == undefined) {
@@ -165,15 +179,24 @@ There.init({
       let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - 6000000.0, 0.0));
       $('.compass .altimeter span').text(There.getDistanceText(height));
     }
+  },
+
+  updateLocationCoordinate: function() {
+    let coordinate = There.data.location.coordinate;
+    if (coordinate == undefined) {
+      return;
+    }
     if ($('.compass').attr('data-mode') == 'race' && There.data.track != undefined) {
       let track = There.data.track;
       if (track.index < track.waypoints.length) {
         let waypoint = track.waypoints[track.index];
-        let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - position.x) ** 2 + (waypoint.position[1] - position.y) ** 2), 0.0));
+        let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - coordinate.x) ** 2 + (waypoint.position[1] - coordinate.y) ** 2), 0.0));
         $('.compass .race .body[data-id="navigation"] ul li:eq(0) span:eq(1)').text(There.getDistanceText(distance));
         if (distance < 50) {
+          let x = coordinate.x;
+          let y = coordinate.y;
           There.setNamedTimer('track-waypoint', 500, function() {
-            There.passRaceWaypoint();
+            There.passRaceWaypoint(x, y);
           });
         }
       }
@@ -328,7 +351,7 @@ There.init({
       },
       dataType: 'json',
       success: function(data) {
-        if (data.token != undefined) {
+        if (data.token != null) {
           There.setToken(data.token);
           $('.compass').attr('data-mode', 'pick');
         } else {
@@ -393,7 +416,9 @@ There.init({
         }
         There.data.tracks['*'] = data.tracks ?? [];
         There.setupPick();
-        if (data.token == null && !There.data.skipped) {
+        if (data.token != null) {
+          There.setToken(data.token);
+        } else if (!There.data.skipped) {
           $('.compass').attr('data-mode', 'login');
           There.fsCommand('getKeyboardFocus');
           $('.compass .login input[type="text"]').val('').focus();
@@ -611,18 +636,30 @@ There.init({
       $('.compass .button[data-id="close"]').attr('data-enabled', '1');
       $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
     }
-    There.updateLocationPosition();
-    There.updateLocationPoint();
-    There.updateLocationOffset();
-    There.updateLocationTile();
+    There.updateLocation();
   },
 
-  passRaceWaypoint: function() {
+  passRaceWaypoint: function(x, y) {
     if ($('.compass').attr('data-mode') != 'race' || There.data.track == undefined) {
       return;
     }
     let track = There.data.track;
     if (track.index < track.waypoints.length) {
+      $.ajax({
+        url: 'https://www.hmph.us/there/api/minimap/waypoint/',
+        method: 'POST',
+        data: {
+          token: There.getToken(),
+          avatar_name: There.variables.there_pilotname ?? '',
+          track_id: track.id,
+          index: track.index,
+          x: x,
+          y: y,
+        },
+        dataType: 'json',
+        success: function(data) {
+        },
+      });
       track.index++;
       There.setupRaceWaypoint();
       if (track.index == track.waypoints.length) {
