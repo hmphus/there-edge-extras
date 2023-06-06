@@ -5,6 +5,7 @@ There.init({
     tracks: {},
     zoom: 10,
     skipped: false,
+    radius: 6000000.0,
   },
 
   onReady: function() {
@@ -114,11 +115,14 @@ There.init({
     }
     location.position = position;
     There.updateLocationPosition();
-    let normalizer = 6000000.0 / Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2);
+    let normalizer = There.data.radius / Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2);
     let coordinate = {
       x: position.x * normalizer,
       y: position.y * normalizer,
     };
+    if (position.z < 0.0) {
+      coordinate.y = Math.sign(coordinate.y) * 2.0 * There.data.radius - coordinate.y;
+    }
     var longitude = 0.000109861473792 * coordinate.x + 4.11852320371869;
     var latitude;
     if (coordinate.y < 1000000.0) {
@@ -176,7 +180,7 @@ There.init({
       return;
     }
     {
-      let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - 6000000.0, 0.0));
+      let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - There.data.radius, 0.0));
       $('.compass .altimeter span').text(There.getDistanceText(height));
     }
   },
