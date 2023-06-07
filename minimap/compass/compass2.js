@@ -121,7 +121,7 @@ There.init({
       y: position.y * normalizer,
     };
     if (position.z < 0.0) {
-      coordinate.y = Math.sign(coordinate.y) * 2.0 * There.data.radius - coordinate.y;
+      coordinate.x = Math.sign(coordinate.x) * 2.0 * There.data.radius - coordinate.x;
     }
     var longitude = 0.000109861473792 * coordinate.x + 4.11852320371869;
     var latitude;
