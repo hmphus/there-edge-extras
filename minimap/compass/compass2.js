@@ -74,7 +74,8 @@ There.init({
         There.onLocationXml(xml);
       },
       complete: function(jqXHR, status) {
-        There.setNamedTimer('fetch-location', 1000, function() {
+        let timeout = $('.compass').attr('data-mode') == 'race' ? 250 : 1000;
+        There.setNamedTimer('fetch-location', timeout, function() {
           There.fetchLocationXml();
         });
       },
@@ -199,7 +200,7 @@ There.init({
         if (distance < 50) {
           let x = coordinate.x;
           let y = coordinate.y;
-          There.setNamedTimer('track-waypoint', 500, function() {
+          There.setNamedTimer('track-waypoint', 50, function() {
             There.passRaceWaypoint(x, y);
           });
         }
