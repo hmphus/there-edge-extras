@@ -552,6 +552,12 @@ body {
   overflow:hidden;
 }
 
+.compass .race[data-active="1"][data-notice="1"] .panel {
+  display:flex;
+  flex-direction:column;
+  justify-content:flex-start;
+}
+
 .compass .race .title {
   padding:2px;
   border-bottom:1px solid #666;
@@ -566,7 +572,47 @@ body {
   color:#333;
 }
 
-.compass .race[data-active="0"] .body[data-id="navigation"] {
+.compass .race .body[data-id="notice"] {
+  display:flex;
+  flex-direction:row;
+  justify-content:flex-end;
+  align-items:center;
+  flex-grow:1;
+  padding:10px;
+}
+
+.compass .race .body[data-id="notice"] .text {
+  flex-grow:1;
+  font-size:30px;
+  color:#333;
+  text-align:center;
+}
+
+.compass .race .body[data-id="notice"] .arrow {
+  width:50px;
+  height:50px;
+  background-color:#666;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  border-radius:25px;
+  transform:rotate(calc(var(--direction) - var(--heading)));
+}
+
+.compass .race .body[data-id="notice"] .arrow span {
+  width:30px;
+  height:36px;
+  background-image:url(compass2.png);
+  background-position:-170px -224px;
+}
+
+.compass .race[data-active="0"] .body[data-id="navigation"],
+.compass .race[data-notice="1"] .body[data-id="navigation"] {
+  display:none;
+}
+
+.compass .race[data-active="0"] .body[data-id="notice"],
+.compass .race[data-notice="0"] .body[data-id="notice"] {
   display:none;
 }
 

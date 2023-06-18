@@ -30,7 +30,7 @@ There.init({
       $('.compass').attr(name.replace('there_', 'data-'), value);
     }
     if (name == 'there_avheading') {
-      $('.compass .main').css('--heading', `${value}deg`);
+      $('.compass').css('--heading', `${value}deg`);
     }
     if (name == 'there_ready' && value == 1) {
       There.fetchPilotXml(),
@@ -180,10 +180,8 @@ There.init({
     if (position == undefined) {
       return;
     }
-    {
-      let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - There.data.radius, 0.0));
-      $('.compass .altimeter span').text(There.getDistanceText(height));
-    }
+    let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - There.data.radius, 0.0));
+    $('.compass .altimeter span').text(There.getDistanceText(height));
   },
 
   updateLocationCoordinate: function() {
@@ -195,12 +193,33 @@ There.init({
       let track = There.data.track;
       if (track.index < track.waypoints.length) {
         let waypoint = track.waypoints[track.index];
-        let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - coordinate.x) ** 2 + (waypoint.position[1] - coordinate.y) ** 2), 0.0));
-        $('.compass .race .body[data-id="navigation"] ul li:eq(0) span:eq(1)').text(There.getDistanceText(distance));
+        let distance = There.getDistance(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
+        let distanceText = There.getDistanceText(distance);
+        let direction = There.getDirection(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
+        let heading = parseFloat(There.variables.there_avheading ?? 0);
+        $('.compass .race .body[data-id="navigation"] ul li:eq(0) span:eq(1)').text(distanceText);
+        $('.compass .race .body[data-id="notice"] .text').text(distanceText);
+        $('.compass .race .body[data-id="notice"]').css('--direction', `${direction}deg`);
+        if (distance > 100000) {
+          waypoint.hideNotice = true;
+          There.clearNamedTimer('track-waypoint-notice');
+          $('.compass .race').attr('data-notice', '0');
+        } else if (distance < 200 || Math.abs(There.getNormalizedHeading(direction - heading)) > 60) {
+          waypoint.hideNotice = false;
+          There.clearNamedTimer('track-waypoint-notice');
+          $('.compass .race').attr('data-notice', '1');
+        } else {
+          if (!waypoint.hideNotice) {
+            waypoint.hideNotice = true;
+            There.setNamedTimer('track-waypoint-notice', 3000, function() {
+              $('.compass .race').attr('data-notice', '0');
+            });
+          }
+        }
         if (distance < 50) {
           let x = coordinate.x;
           let y = coordinate.y;
-          There.setNamedTimer('track-waypoint', 50, function() {
+          There.setNamedTimer('track-waypoint-pass', 50, function() {
             There.passRaceWaypoint(x, y);
           });
         }
@@ -263,6 +282,10 @@ There.init({
     }
   },
 
+  getDistance: function(x1, y1, x2, y2) {
+    return Math.floor(Math.max(Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2), 0.0));
+  },
+
   getDistanceText: function(value) {
     if (value < 1000) {
       return Number(value).toLocaleString('en-us', {
@@ -274,6 +297,14 @@ There.init({
       minimumFractionDigits: digits,
       maximumFractionDigits: digits,
     }) + 'km';
+  },
+
+  getDirection: function(x1, y1, x2, y2) {
+    return There.getNormalizedHeading(270 - Math.round(Math.atan2(y2 - y1, x2 - x1) * 180.0 / Math.PI));
+  },
+
+  getNormalizedHeading(value) {
+    return value - Math.trunc(value / 360) * 360;
   },
 
   getDurationText: function(value) {
@@ -586,12 +617,14 @@ There.init({
   },
 
   exitRace: function() {
+    There.clearNamedTimer('track-waypoint-pass');
+    There.clearNamedTimer('track-waypoint-notice');
     delete There.data.track;
-      $('.compass .race').attr('data-active', '0');
-      $('.compass .button[data-id="close"]').attr('data-enabled', '1');
-      $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
-      $('.compass .race .body[data-id="summary"]').text('');
-      $('.compass .race .body[data-id="navigation"] ul').empty();
+    $('.compass .race').attr('data-active', '0').attr('data-notice', '0');
+    $('.compass .button[data-id="close"]').attr('data-enabled', '1');
+    $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
+    $('.compass .race .body[data-id="summary"]').text('');
+    $('.compass .race .body[data-id="navigation"] ul').empty();
   },
 
   setupRaceWaypoint: function() {
@@ -620,9 +653,8 @@ There.init({
         let distanceText = '';
         if (i > 0) {
           let waypoint2 = track.waypoints[i - 1];
-          let distance = Math.floor(Math.max(Math.sqrt((waypoint.position[0] - waypoint2.position[0]) ** 2 + (waypoint.position[1] - waypoint2.position[1]) ** 2), 0.0));
+          let distance = There.getDistance(waypoint.position[0], waypoint.position[1], waypoint2.position[0], waypoint2.position[1]);
           distanceText = There.getDistanceText(distance);
-
         }
         let li = $('<li>');
         $('<span>').text(`${waypoint.name} (`).appendTo($(li));
@@ -630,13 +662,13 @@ There.init({
         $('<span>').text(')').appendTo($(li));
         $(ul).append($(li));
       }
-      $('.compass .race').attr('data-active', '1');
+      $('.compass .race').attr('data-active', '1').attr('data-notice', '1');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', track.index > 0 || !track.teleport ? '0' : '1');
       $('.compass .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');
       $('.compass .button[data-id="expand"]').attr('data-enabled', track.index > 0 ? '0' : '1');
     } else {
       $('.compass .race .body[data-id="summary"]').text(`You reached the goal in ${There.getDurationText(Date.now() - track.time)}.`);
-      $('.compass .race').attr('data-active', '0');
+      $('.compass .race').attr('data-active', '0').attr('data-notice', '0');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', !track.teleport ? '0' : '1');
       $('.compass .button[data-id="close"]').attr('data-enabled', '1');
       $('.compass .button[data-id="expand"]').attr('data-enabled', '1');
