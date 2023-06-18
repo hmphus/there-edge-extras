@@ -314,10 +314,6 @@ body {
   background-color:#b0f6fcc0;
 }
 
-.compass[data-mode="race"] .altimeter {
-  display:none;
-}
-
 .compass .blocker[data-id="close"] {
   position:absolute;
   left:182px;
