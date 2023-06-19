@@ -193,7 +193,7 @@ There.init({
       let track = There.data.track;
       if (track.index < track.waypoints.length) {
         let waypoint = track.waypoints[track.index];
-        let distance = There.getDistance(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
+        let distance = There.getArcDistance(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
         let distanceText = There.getDistanceText(distance);
         let direction = There.getDirection(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
         let heading = parseFloat(There.variables.there_avheading ?? 0);
@@ -282,8 +282,19 @@ There.init({
     }
   },
 
-  getDistance: function(x1, y1, x2, y2) {
-    return Math.floor(Math.max(Math.sqrt((x1 - x2) ** 2 + (y1 - y2) ** 2), 0.0));
+  getArcDistance: function(x1, y1, x2, y2) {
+    let d2 = (x1 - x2) ** 2 + (y1 - y2) ** 2;
+    let distance = Math.floor(Math.max(Math.sqrt(d2), 0.0));
+    if (distance > 95240.0) {
+      let r2 = There.data.radius ** 2;
+      let ah = d2 / (2.0 * r2);
+      if (ah > 2.0) {
+        ah = 4.0 - ah;
+      }
+      let angle = Math.acos(1.0 - ah);
+      distance = Math.floor(There.data.radius * angle);
+    }
+    return distance;
   },
 
   getDistanceText: function(value) {
@@ -303,8 +314,9 @@ There.init({
     return There.getNormalizedHeading(270 - Math.round(Math.atan2(y2 - y1, x2 - x1) * 180.0 / Math.PI));
   },
 
-  getNormalizedHeading(value) {
-    return value - Math.trunc(value / 360) * 360;
+  getNormalizedHeading: function(value) {
+    value = value - Math.trunc(value / 360) * 360;
+    return value > 180 ? value - 360 : value;
   },
 
   getDurationText: function(value) {
@@ -653,7 +665,7 @@ There.init({
         let distanceText = '';
         if (i > 0) {
           let waypoint2 = track.waypoints[i - 1];
-          let distance = There.getDistance(waypoint.position[0], waypoint.position[1], waypoint2.position[0], waypoint2.position[1]);
+          let distance = There.getArcDistance(waypoint.position[0], waypoint.position[1], waypoint2.position[0], waypoint2.position[1]);
           distanceText = There.getDistanceText(distance);
         }
         let li = $('<li>');

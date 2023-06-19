@@ -578,7 +578,7 @@ body {
   justify-content:flex-end;
   align-items:center;
   flex-grow:1;
-  padding:10px;
+  padding:4px 10px;
 }
 
 .compass .race .body[data-id="notice"] .text {
@@ -589,17 +589,20 @@ body {
 }
 
 .compass .race .body[data-id="notice"] .arrow {
-  width:50px;
-  height:50px;
-  background-color:#666;
+  flex-grow:0;
   display:flex;
   justify-content:center;
   align-items:center;
+  width:50px;
+  height:50px;
+  background-color:#666;
   border-radius:25px;
   transform:rotate(calc(var(--direction) - var(--heading)));
 }
 
 .compass .race .body[data-id="notice"] .arrow span {
+  display:block;
+  margin-bottom:5px;
   width:30px;
   height:36px;
   background-image:url(compass2.png);
