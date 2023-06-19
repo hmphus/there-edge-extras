@@ -674,6 +674,7 @@ There.init({
         $('<span>').text(')').appendTo($(li));
         $(ul).append($(li));
       }
+      $('.compass .race .title[data-id="notice"]').text(track.waypoints[track.index].name);
       $('.compass .race').attr('data-active', '1').attr('data-notice', '1');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', track.index > 0 || !track.teleport ? '0' : '1');
       $('.compass .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');

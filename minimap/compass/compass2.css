@@ -566,6 +566,13 @@ body {
   color:#333;
 }
 
+.compass .race .title[data-id="notice"] {
+  max-height:13px;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+}
+
 .compass .race .body {
   padding:2px;
   font-size:11px;
@@ -609,16 +616,21 @@ body {
   background-position:-170px -224px;
 }
 
+.compass .race[data-active="0"] .title[data-id="navigation"],
+.compass .race[data-notice="1"] .title[data-id="navigation"],
 .compass .race[data-active="0"] .body[data-id="navigation"],
 .compass .race[data-notice="1"] .body[data-id="navigation"] {
   display:none;
 }
 
+.compass .race[data-active="0"] .title[data-id="notice"],
+.compass .race[data-notice="0"] .title[data-id="notice"],
 .compass .race[data-active="0"] .body[data-id="notice"],
 .compass .race[data-notice="0"] .body[data-id="notice"] {
   display:none;
 }
 
+.compass .race[data-active="1"] .title[data-id="summary"],
 .compass .race[data-active="1"] .body[data-id="summary"] {
   display:none;
 }
