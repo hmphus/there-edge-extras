@@ -122,7 +122,7 @@ There.init({
       y: position.y * normalizer,
     };
     if (position.z < 0.0) {
-      coordinate.x = Math.sign(coordinate.x) * 2.0 * There.data.radius - coordinate.x;
+      coordinate.x = (coordinate.x < 0.0 ? -2.0 : 2.0) * There.data.radius - coordinate.x;
     }
     var longitude = 0.000109861473792 * coordinate.x + 4.11852320371869;
     var latitude;
@@ -131,7 +131,7 @@ There.init({
     } else {
         latitude = -2.83863583089598e-09 * coordinate.y * coordinate.y + 0.0112260357825775 * coordinate.y - 11028.605321244;
     }
-    if (location.coordinate?.x != coordinate.x || location.coordinate?.y != coordinate) {
+    if (location.coordinate?.x != coordinate.x || location.coordinate?.y != coordinate.y) {
       location.coordinate = coordinate;
       There.updateLocationCoordinate();
     }
@@ -145,7 +145,7 @@ There.init({
       x: Math.floor(point1.x * 256.0),
       y: Math.floor(point1.y * 256.0),
     };
-    if (location.point?.x != point2.x || location.point?.y != point2) {
+    if (location.point?.x != point2.x || location.point?.y != point2.y) {
       location.point = point2;
       There.updateLocationPoint();
     }
