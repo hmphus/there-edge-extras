@@ -710,6 +710,9 @@ There.init({
         success: function(data) {
         },
       });
+      if (track.index == 0) {
+        track.time = Date.now();
+      }
       track.index++;
       There.setupRaceWaypoint();
       if (track.index == track.waypoints.length) {
