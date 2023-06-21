@@ -245,7 +245,7 @@ body {
   text-align:center;
   font-size:11px;
   font-weight:bold;
-  color:#666;
+  color:#333;
   transform:rotate(var(--heading));
 }
 
@@ -373,6 +373,7 @@ body {
   background-position-x:-26px;
 }
 
+.compass[data-mode="login"] .button[data-id="expand"],
 .compass[data-mode="pick"] .button[data-id="expand"],
 .compass[data-mode="race"] .button[data-id="expand"],
 .compass[data-mode="edit"] .button[data-id="expand"] {

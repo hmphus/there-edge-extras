@@ -3,6 +3,10 @@ There.init({
     location: {},
     places: {},
     tracks: {},
+    locomotion: {
+      pilot: {},
+      vehicle: {},
+    },
     zoom: 10,
     skipped: false,
     radius: 6000000.0,
@@ -33,16 +37,16 @@ There.init({
       $('.compass').css('--heading', `${value}deg`);
     }
     if (name == 'there_ready' && value == 1) {
-      There.fetchPilotXml(),
-      There.fetchLocationXml();
+      There.fetchPilot(),
+      There.fetchLocation();
       There.fetchPlaces();
     }
     if (name == 'there_configurationchanged' && value == 1) {
-      There.setNamedTimer('pilot', 1000, There.fetchPilotXml);
+      There.setNamedTimer('pilot', 1000, There.fetchPilot);
     }
   },
 
-  fetchPilotXml: async function() {
+  fetchPilot: async function() {
     await There.fetchAsync({
       path: '/ClientLoginGui/pilotInfo',
       dataType: 'xml',
@@ -63,9 +67,9 @@ There.init({
     }
   },
 
-  fetchLocationXml: function() {
+  fetchLocation: function() {
     There.fetch({
-      path: `/ihost/doblocation`,
+      path: '/ihost/doblocation',
       query: {
         doid: There.variables.there_pilotdoid,
       },
@@ -76,7 +80,7 @@ There.init({
       complete: function(jqXHR, status) {
         let timeout = $('.compass').attr('data-mode') == 'race' ? 250 : 1000;
         There.setNamedTimer('fetch-location', timeout, function() {
-          There.fetchLocationXml();
+          There.fetchLocation();
         });
       },
     });
@@ -720,6 +724,327 @@ There.init({
       } else {
         There.data.audio.waypoint.play();
       }
+    }
+  },
+
+  fetchLocomotion: async function() {
+    let locomotion = There.data.locomotion;
+    if (locomotion.pilot.doid != There.variables.there_pilotdoid || locomotion.vehicle.doid == null) {
+      locomotion.pilot = {
+        doid: There.variables.there_pilotdoid,
+        interactions: [],
+        label: null,
+        dasps: null,
+      }
+      locomotion.vehicle = {};
+      await Promise.all([
+        There.fetchInteractions(locomotion.pilot.doid, locomotion.pilot),
+        There.fetchInteractionLabel(locomotion.pilot.doid, locomotion.pilot),
+        There.fetchDobDetails(locomotion.pilot.doid, locomotion.pilot),
+      ]);
+      if (locomotion.pilot.interactions.length == 0 || locomotion.pilot.label == null || locomotion.pilot.name == null) {
+        locomotion.pilot = {};
+      }
+    }
+    if (locomotion.pilot.doid != null) {
+      if (locomotion.pilot.interactions.length > 1) {
+        if (locomotion.vehicle.doid != null) {
+          locomotion.vehicle.dasps = null;
+          await There.fetchDobDetails(locomotion.vehicle.doid, locomotion.vehicle);
+          // TODO: Clear vehicle if state is not active or not avatar doid not in seat
+        }
+        if (locomotion.vehicle.doid == null) {
+          let clides = {};
+          await There.fetchClides(clides)
+          let avatar = clides.Avatar3[locomotion.pilot.doid];
+          delete clides.Avatar3;
+          if (avatar != null) {
+            let vehicles = [];
+            let promises = [];
+            for (let [clide, dobs] of Object.entries(clides)) {
+              for (let [doid, dob] of Object.entries(dobs)) {
+                let distance2 = (dob.pos[0] - avatar.pos[0]) ** 2 + (dob.pos[1] - avatar.pos[1]) ** 2 + (dob.pos[2] - avatar.pos[2]) ** 2;
+                if (distance2 < 225) {
+                  vehicle = {
+                    doid: doid,
+                    clide: clide,
+                    dasps: null,
+                  };
+                  vehicles.push(vehicle);
+                  promises.push(There.fetchDobDetails(vehicle.doid, vehicle));
+                }
+              }
+            }
+            await Promise.all(promises);
+            locomotion.vehicle = vehicles.find(function(vehicle) {
+              if (vehicle.name != locomotion.pilot.label) {
+                return false;
+              }
+              // TODO: Return false if state is not active or not avatar doid not in seat
+              return true;
+            });
+          }
+        }
+        if (locomotion.vehicle.doid != null) {
+        // TODO: Get speed for current vehicle
+        }
+      } else {
+        locomotion.vehicle = {};
+        // TODO: Get speed for avatar
+      }
+    }
+    /* TODO
+    let timeout = speed > 0 ? 250 : 1000;
+    There.setNamedTimer('fetch-locomotion', timeout, function() {
+      There.fetchLocomotion();
+    });
+    */
+  },
+
+  fetchInteractions: async function(doid, data) {
+    await There.fetchAsync({
+      path: '/ScriptHook/Get',
+      query: {
+        Path: `/thobs/${doid}/presence0/interactions`,
+      },
+      dataType: 'xml',
+      success: function(xml) {
+        There.onInteractionsXml(xml, data);
+      },
+    });
+  },
+
+  onInteractionsXml: function(xml, data) {
+    const xmlAnswer = xml.getElementsByTagName('Answer')[0];
+    const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
+    if (xmlResult.childNodes[0].nodeValue != 1) {
+      return;
+    }
+    const xmlNode = xmlAnswer.getElementsByTagName('Node')[0];
+    const xmlChildren = xmlNode.getElementsByTagName('Children')[0];
+    for (let xmlChild of xmlChildren.childNodes) {
+      if (xmlChild.nodeName == 'Child') {
+        const xmlName = xmlChild.getElementsByTagName('Name')[0];
+        data.interactions.push(xmlName.childNodes[0].nodeValue);
+      }
+    }
+  },
+
+  fetchInteractionLabel: async function(doid, data) {
+    await There.fetchAsync({
+      path: '/ScriptHook/Get',
+      query: {
+        Path: `/thobs/${doid}/presence0/interactions/labelTitle`,
+      },
+      dataType: 'xml',
+      success: function(xml) {
+        There.onInteractionLabelXml(xml, data);
+      },
+    });
+  },
+
+  onInteractionLabelXml: function(xml, data) {
+    const xmlAnswer = xml.getElementsByTagName('Answer')[0];
+    const xmlResult = xmlAnswer.getElementsByTagName('Result')[0];
+    if (xmlResult.childNodes[0].nodeValue != 1) {
+      return;
+    }
+    const xmlNode = xmlAnswer.getElementsByTagName('Node')[0];
+    data.label = xmlNode.getElementsByTagName('Value')[0].childNodes[0].nodeValue;
+  },
+
+  fetchClides: async function(data) {
+    await There.fetchAsync({
+      path: '/ihost/clides',
+      query: {
+        clide: '',
+        sobonly: '',
+        doid: '',
+      },
+      dataType: 'xml',
+      success: function(xml) {
+        There.onClidesXml(xml, data);
+      },
+    });
+  },
+
+  onClidesXml: function(xml, data) {
+    const xmlAnswer = xml.getElementsByTagName('answer')[0];
+    const xmlResult = xmlAnswer.getElementsByTagName('success')[0];
+    if (xmlResult.childNodes[0].nodeValue != 1) {
+      return;
+    }
+    const clides = ['Avatar3', 'Buggy', 'Hovercraft', 'Hoverpack', 'Hoverboat'];
+    for (let clide of clides) {
+      data[clide] = {}
+    }
+    for (let xmlDob of xmlAnswer.childNodes) {
+      if (xmlDob.nodeName == 'Dob') {
+        let doid = Number(xmlDob.getElementsByTagName('Doid')[0].childNodes[0].nodeValue);
+        let clide = xmlDob.getElementsByTagName('Clide')[0].childNodes[0].nodeValue;
+        let state = xmlDob.getElementsByTagName('State')[0].childNodes[0].nodeValue;
+        if (state != 'Operating' || !clides.includes(clide)) {
+          continue;
+        }
+        let pos = xmlDob.getElementsByTagName('Pos')[0]?.childNodes[0].nodeValue;
+        data[clide][doid] = {
+          pos: pos.slice(1, -1).split(',').map((v) => Number(v)),
+        };
+      }
+    }
+  },
+
+  fetchDobDetails: async function(doid, data) {
+    await There.fetchAsync({
+      path: '/ihost/details',
+      query: {
+        doid: doid,
+      },
+      dataType: 'html',
+      success: function(html) {
+        There.onDobDetailsHtml(html, data);
+      },
+    });
+  },
+
+  onDobDetailsHtml: function(html, data) {
+    data.dasps = {};
+    let text = $(html).find('textarea[name="state"]').val();
+    if (text != null) {
+      for (let dasp of There.parseDasps(text)) {
+        let code = dasp.code;
+        if (code != null) {
+          delete dasp.code;
+          data.dasps[code] = dasp;
+        }
+      }
+    }
+    There.processDobDasps(data);
+  },
+
+  parseDasps: function(text) {
+    let dasps = [];
+    let stack = [];
+    let key = '';
+    let value = '';
+    let mode = 0;
+    for (let t of text) {
+      if (t == '\n') {
+          continue;
+      } else if (mode == 0) {
+        if (t == '=') {
+          mode = 1;
+        } else if (t == '}') {
+          if (key != '') {
+            stack[stack.length - 1][1] = key;
+          }
+          [key, value, type] = stack.pop();
+          if (key != '') {
+            stack[stack.length - 1][1][key] = value;
+          }
+          key = '';
+          value = '';
+          mode = 1;
+        } else if (t == ']') {
+          [key, value, type] = stack.pop();
+          if (key != '') {
+            stack[stack.length - 1][1][key] = value;
+          }
+          key = '';
+          value = '';
+          mode = 1;
+        } else if (t != ' ') {
+          key += t;
+        }
+      } else if (mode == 1) {
+        if (t == '"') {
+          mode = 2;
+        } else if (t == '{') {
+          stack.push([key, {}, 0]);
+          key = '';
+          value = '';
+          mode = 0;
+        } else if (t == '}') {
+          if (key != '') {
+            stack[stack.length - 1][1][key] = value;
+          }
+          [key, value, type] = stack.pop();
+          if (stack.length == 0) {
+            dasps.push(value);
+            mode = 0;
+          } else if (key != '') {
+            stack[stack.length - 1][1][key] = value;
+          }
+          key = '';
+          value = '';
+        } else if (t == '[') {
+          stack.push([key, [], 1]);
+          key = '';
+          value = '';
+          mode = 0;
+        } else if (t == ']') {
+          if (value != '') {
+            if (key == '') {
+              stack[stack.length - 1][1].push(value);
+            } else {
+              stack[stack.length - 1][1].push({[key]: value});
+            }
+          }
+          [key, value, type] = stack.pop();
+          if (stack.length == 0) {
+            dasps.push(value);
+            mode = 0;
+          } else if (key != '') {
+            stack[stack.length - 1][1][key] = value;
+          }
+          key = '';
+          value = '';
+        } else if (t == ' ') {
+          if (stack[stack.length - 1][2] == 0 && key != '') {
+            stack[stack.length - 1][1][key] = value;
+          } else if (stack[stack.length - 1][2] == 1 && value != '') {
+            if (value[value.length - 1] == ',') {
+              value = value.slice(0, -1);
+            }
+            if (key == '') {
+              stack[stack.length - 1][1].push(value);
+            } else {
+              stack[stack.length - 1][1].push({[key]: value});
+            }
+          }
+          key = '';
+          value = '';
+          mode = 0;
+        } else {
+          value += t;
+        }
+      } else if (mode == 2) {
+        if (t == '"') {
+          mode = 1;
+        } else {
+          value += t;
+        }
+      }
+    }
+    return dasps;
+  },
+
+  processDobDasps: function(dob) {
+    dasps = dob.dasps;
+    dob.name = dasps[5]?.name.name;
+    dob.diphy = (dasps[2]?.local.diphyState ?? '0:').split(':', 2)[1]?.split(',')?.map((v) => Number(v)) ?? [];
+    switch (dob.clide) {
+      case 'Buggy':
+        dob.script = dasps[38]?.script.filename;
+        break;
+      case 'Hovercraft':
+      case 'Hoverpack':
+      case 'Hoverboat':
+        dob.script = dasps[32]?.aconf.file.filename;
+        break;
+      default:
+        dob.script = null;
+        break;
     }
   },
 });
