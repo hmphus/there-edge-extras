@@ -1,3 +1,65 @@
+class DiphyState {
+  constructor(data) {
+    let self = this;
+    self.data = data;
+    self.seek();
+  }
+
+  align() {
+    let self = this;
+    if (self.shift < 7) {
+      self.offset += 1;
+      self.shift = 7;
+    }
+  }
+
+  seek(offset, shift) {
+    let self = this;
+    self.offset = offset ?? 0;
+    self.shift = shift ?? 7;
+  }
+
+  extract(width) {
+    let self = this;
+    if (self.data.length - self.offset - Math.max(0, Math.ceil((width - self.shift - 1) / 8)) <= 0) {
+      throw 'Out of data';
+    }
+    let value = 0n;
+    while (width > 0) {
+      let bits = Math.min(width, self.shift + 1);
+      value <<= BigInt(bits)
+      value |= BigInt((self.data[self.offset] >> (self.shift - bits + 1)) & ((1 << bits) - 1));
+      width -= bits;
+      self.shift -= bits;
+      if (self.shift < 0) {
+        self.align();
+      }
+    }
+    return Number(value);
+  }
+
+  extract_bool() {
+    let self = this;
+    let value = self.extract(1);
+    return value == 1;
+  }
+
+  extract_int(width, start) {
+    let self = this;
+    start ??= 0;
+    return self.extract(width) + start;
+  }
+
+  extract_float(width, start, end) {
+    let self = this;
+    start ??= 0.0;
+    end ??= 0.0;
+    let step = end > start ? (end - start) / ((1 << width) - 1) : 1.0;
+    return self.extract(width) * step + start;
+  }
+}
+
+
 There.init({
   data: {
     location: {},
@@ -40,6 +102,7 @@ There.init({
       There.fetchPilot(),
       There.fetchLocation();
       There.fetchPlaces();
+      There.fetchLocomotion();
     }
     if (name == 'there_configurationchanged' && value == 1) {
       There.setNamedTimer('pilot', 1000, There.fetchPilot);
@@ -262,8 +325,8 @@ There.init({
     if (tile == undefined) {
       return;
     }
-    for (let x in [0, 1, 2]) {
-      for (let y in [0, 1, 2]) {
+    for (let x of [0, 1, 2]) {
+      for (let y of [0, 1, 2]) {
         let offsetTile = {
           x: tile.x + (x - 1),
           y: tile.y + (y - 1),
@@ -346,6 +409,14 @@ There.init({
       text = `${days} day${days == 1 ? '' : 's'}${text.length == 0 ? '' : ' '}${text}`;
     }
     return text;
+  },
+
+  getSpeed: function(value) {
+    return Math.round(Math.floor(Math.sqrt(value.reduce((p, v) => p + v ** 2, 0.0))) * 3.6);
+  },
+
+  getSpeedText: function(value) {
+    return Number(value).toLocaleString('en-us') + 'km/h';
   },
 
   getTileUrl: function(tile) {
@@ -751,7 +822,9 @@ There.init({
         if (locomotion.vehicle.doid != null) {
           locomotion.vehicle.dasps = null;
           await There.fetchDobDetails(locomotion.vehicle.doid, locomotion.vehicle);
-          // TODO: Clear vehicle if state is not active or not avatar doid not in seat
+          if (!There.isRiding(locomotion.pilot, locomotion.vehicle)) {
+            locomotion.vehicle = {};
+          }
         }
         if (locomotion.vehicle.doid == null) {
           let clides = {};
@@ -777,28 +850,38 @@ There.init({
             }
             await Promise.all(promises);
             locomotion.vehicle = vehicles.find(function(vehicle) {
-              if (vehicle.name != locomotion.pilot.label) {
-                return false;
-              }
-              // TODO: Return false if state is not active or not avatar doid not in seat
-              return true;
-            });
+              return There.isRiding(locomotion.pilot, vehicle);
+            }) ?? {};
           }
         }
         if (locomotion.vehicle.doid != null) {
-        // TODO: Get speed for current vehicle
+          locomotion.vehicle.speed = There.getSpeed(locomotion.vehicle.velocity);
         }
       } else {
         locomotion.vehicle = {};
-        // TODO: Get speed for avatar
+      }
+      if (locomotion.vehicle.doid == null) {
+        locomotion.pilot.speed = There.getSpeed(locomotion.pilot.velocity);
       }
     }
-    /* TODO
+    let speed = locomotion.vehicle?.speed ?? locomotion.pilot?.speed ?? 0;
     let timeout = speed > 0 ? 250 : 1000;
     There.setNamedTimer('fetch-locomotion', timeout, function() {
       There.fetchLocomotion();
     });
-    */
+  },
+
+  isRiding: function(pilot, vehicle) {
+    if (vehicle.name != pilot.label) {
+      return false;
+    }
+    if (vehicle.seats == null) {
+      return false;
+    }
+    if (!vehicle.seats.includes(pilot.doid)) {
+      return false;
+    }
+    return true;
   },
 
   fetchInteractions: async function(doid, data) {
@@ -887,9 +970,11 @@ There.init({
           continue;
         }
         let pos = xmlDob.getElementsByTagName('Pos')[0]?.childNodes[0].nodeValue;
-        data[clide][doid] = {
-          pos: pos.slice(1, -1).split(',').map((v) => Number(v)),
-        };
+        if (pos != null) {
+          data[clide][doid] = {
+            pos: pos.slice(1, -1).split(',').map((v) => Number(v)),
+          };
+        }
       }
     }
   },
@@ -1031,20 +1116,85 @@ There.init({
 
   processDobDasps: function(dob) {
     dasps = dob.dasps;
+    dob.pid = dasps[0]?.dStatic.productId;
     dob.name = dasps[5]?.name.name;
-    dob.diphy = (dasps[2]?.local.diphyState ?? '0:').split(':', 2)[1]?.split(',')?.map((v) => Number(v)) ?? [];
+    dob.diphy = new DiphyState((dasps[2]?.local.diphyState ?? '0:').split(':', 2)[1]?.split(',')?.map((v) => Number(v)) ?? []);
+    dob.script = null;
+    dob.type = null;
+    dob.seats = [];
+    dob.velocity = [];
+    seatOffset = null;
     switch (dob.clide) {
       case 'Buggy':
         dob.script = dasps[38]?.script.filename;
+        if (dob.script != null) {
+          dob.type = dob.clide;
+          dob.seats = [null, null, null, null];
+          seatOffset = 75;
+        }
         break;
       case 'Hovercraft':
+        dob.script = dasps[32]?.aconf.file.filename;
+        if (dob.script != null) {
+          if (dob.script.startsWith('hc')) {
+            dob.type = 'Hoverboard';
+            dob.seats = [null];
+          }
+          if (dob.script.startsWith('hbk')) {
+            dob.type = 'Hoverbike';
+            dob.seats = [null];
+          }
+          if (dob.script.startsWith('bacio')) {
+            dob.type = 'Bacio';
+            dob.seats = [null, null];
+          }
+          seatOffset = 81;
+        }
+        break;
       case 'Hoverpack':
+        dob.script = dasps[32]?.aconf.file.filename;
+        if (dob.script != null) {
+          dob.type = dob.clide;
+          dob.seats = [null];
+          seatOffset = 60;
+        }
+        break;
       case 'Hoverboat':
         dob.script = dasps[32]?.aconf.file.filename;
+        if (dob.script != null) {
+          dob.type = dob.clide;
+          dob.seats = [null, null, null, null, null];
+          seatOffset = 64;
+        }
         break;
-      default:
-        dob.script = null;
-        break;
+    }
+    try {
+      if (dob.diphy.extract_bool()) {
+        dob.diphy.extract_float(21, -1024.0, 1024.0);
+        dob.diphy.extract_float(21, -1024.0, 1024.0);
+        dob.diphy.extract_float(21, -1024.0, 1024.0);
+        dob.velocity = [
+          dob.diphy.extract_float(18, -1024.0, 1024.0),
+          dob.diphy.extract_float(18, -1024.0, 1024.0),
+          dob.diphy.extract_float(18, -1024.0, 1024.0),
+        ];
+        if (seatOffset != null) {
+          dob.diphy.seek(seatOffset);
+          for (let index in dob.seats) {
+            dob.diphy.extract_int(13);
+            let state1 = dob.diphy.extract_int(8);
+            let state2 = dob.diphy.extract_int(8);
+            dob.diphy.align();
+            if (state1 != 0 || state2 != 255) {
+              if (dob.diphy.extract_bool()) {
+                dob.seats[index] = dob.diphy.extract_int(64);
+              }
+              dob.diphy.align();
+            }
+          }
+        }
+      }
+    } catch {
     }
   },
 });
