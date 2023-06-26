@@ -13,6 +13,13 @@
 <body>
 <div class="compass" data-state="full" data-mode="map" data-ready="0">
 <div class="main">
+<div class="speedometer" data-type="bars" data-active="0">
+<div class="indicator" data-id="1">
+<div class="indicator" data-id="2"></div>
+<div class="indicator" data-id="3"></div>
+<div class="indicator" data-id="4"></div>
+</div>
+</div>
 <div class="map">
 <div class="tile" data-x="0" data-y="0"></div>
 <div class="tile" data-x="2" data-y="0"></div>
@@ -41,7 +48,10 @@
 <div class="tile" data-x="1" data-y="2"></div>
 <div class="tile" data-x="1" data-y="1"></div>
 </div>
-<div class="altimeter"><div><span></span>&#x25b2;</div></div>
+<div class="meters"><div class="box">
+<div class="altimeter" data-type="text"><span></span>&#x25b2;</div>
+<div class="speedometer" data-type="text"><span></span></div>
+</div></div>
 <div class="overlay"></div>
 <div class="rose">
 <div class="direction" data-id="north"><span>N</span></div>

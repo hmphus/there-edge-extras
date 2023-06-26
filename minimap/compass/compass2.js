@@ -248,7 +248,7 @@ There.init({
       return;
     }
     let height = Math.floor(Math.max(Math.sqrt(position.x ** 2 + position.y ** 2 + position.z ** 2) - There.data.radius, 0.0));
-    $('.compass .altimeter span').text(There.getDistanceText(height));
+    $('.compass .altimeter[data-type="text"] span').text(There.getDistanceText(height));
   },
 
   updateLocationCoordinate: function() {
@@ -817,6 +817,7 @@ There.init({
         locomotion.pilot = {};
       }
     }
+    let speed = 0;
     if (locomotion.pilot.doid != null) {
       if (locomotion.pilot.interactions.length > 1) {
         if (locomotion.vehicle.doid != null) {
@@ -854,17 +855,23 @@ There.init({
             }) ?? {};
           }
         }
-        if (locomotion.vehicle.doid != null) {
-          locomotion.vehicle.speed = There.getSpeed(locomotion.vehicle.velocity);
-        }
       } else {
         locomotion.vehicle = {};
       }
-      if (locomotion.vehicle.doid == null) {
-        locomotion.pilot.speed = There.getSpeed(locomotion.pilot.velocity);
+      if (locomotion.vehicle.doid != null) {
+        speed = There.getSpeed(locomotion.vehicle.velocity);
+        locomotion.vehicle.speed = speed;
+        let bars = Math.floor(speed / 10) * 5 + Math.floor(speed % 10 * 0.4);
+        $('.compass .speedometer[data-type="bars"]').css('--speed', `${bars}px`);
+        $('.compass .speedometer[data-type="bars"]').attr('data-active', '1');
+      } else {
+        speed = There.getSpeed(locomotion.pilot.velocity);
+        locomotion.pilot.speed = speed;
+        $('.compass .speedometer[data-type="bars"]').css('--speed', '0px');
+        $('.compass .speedometer[data-type="bars"]').attr('data-active', '0');
       }
     }
-    let speed = locomotion.vehicle?.speed ?? locomotion.pilot?.speed ?? 0;
+    $('.compass .speedometer[data-type="text"] span').text(There.getSpeedText(speed));
     let timeout = speed > 0 ? 250 : 1000;
     There.setNamedTimer('fetch-locomotion', timeout, function() {
       There.fetchLocomotion();

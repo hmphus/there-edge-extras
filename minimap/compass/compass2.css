@@ -54,6 +54,53 @@ body {
   pointer-events:none;
 }
 
+.compass .speedometer[data-type="bars"] {
+  position:absolute;
+  left:3px;
+  top:3px;
+  width:80px;
+  height:73px;
+  overflow:hidden;
+}
+
+.compass .speedometer[data-type="bars"] .indicator {
+  position:absolute;
+  left:0px;
+  bottom:0px;
+  width:100%;
+  box-sizing:border-box;
+  overflow:hidden;
+  transition-property:height;
+  transition-duration:250ms;
+}
+
+.compass .speedometer[data-type="bars"] .indicator[data-id="1"] {
+  height:73px;
+  border:1px solid #666;
+  border-bottom-width:3px;
+  border-top-left-radius:5px;
+  background-image:repeating-linear-gradient(0deg, #8be4f1 0px, #8be4f1 1px, #7bdeef 1px, #7bdeef 2px, #aceaf5 2px, #aceaf5 3px, #8fdeed 3px, #8fdeed 4px, #666 4px, #666 5px);
+}
+
+.compass .speedometer[data-type="bars"] .indicator[data-id="2"] {
+  height:clamp(0px, var(--speed), 71px);
+  background-image:repeating-linear-gradient(0deg, #ec7867 0px, #ec7867 1px, #e86653 1px, #e86653 2px, #f1a094 2px, #f1a094 3px, #e68172 3px, #e68172 4px, #666 4px, #666 5px);
+}
+
+.compass .speedometer[data-type="bars"] .indicator[data-id="3"] {
+  height:clamp(0px, var(--speed), 55px);
+  background-image:repeating-linear-gradient(0deg, #e29f34 0px, #e29f34 1px, #dd9219 1px, #dd9219 2px, #eabb70 2px, #eabb70 3px, #e2a547 3px, #e2a547 4px, #666 4px, #666 5px);
+}
+
+.compass .speedometer[data-type="bars"] .indicator[data-id="4"] {
+  height:clamp(0px, var(--speed), 30px);
+  background-image:repeating-linear-gradient(0deg, #e2c734 0px, #e2c734 1px, #ddbf19 1px, #ddbf19 2px, #ead770 2px, #ead770 3px, #e2c947 3px, #e2c947 4px, #666 4px, #666 5px);
+}
+
+.compass .speedometer[data-type="bars"][data-active="0"] .indicator {
+  height:0px;
+}
+
 .compass .map,
 .compass .icons,
 .compass svg.navigation {
@@ -291,7 +338,7 @@ body {
   height:6px;
 }
 
-.compass .altimeter {
+.compass .meters {
   position:absolute;
   left:0px;
   right:0px;
@@ -301,17 +348,14 @@ body {
   pointer-events:none;
 }
 
-.compass .altimeter div {
+.compass .meters .box {
   display:inline-block;
   padding:0px 4px 1px 4px;
+  background-color:#b0f6fcc0;
   border:1px solid #666;
   border-radius:4px;
   font-size:10px;
   color:#333;
-}
-
-.compass .altimeter div {
-  background-color:#b0f6fcc0;
 }
 
 .compass .blocker[data-id="close"] {
