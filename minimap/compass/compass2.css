@@ -358,6 +358,17 @@ body {
   color:#333;
 }
 
+.compass .meters .altimeter[data-type="text"] svg {
+  width:11px;
+  height:7px;
+  margin-left:3px;
+}
+
+.compass .meters .altimeter[data-type="text"] svg path {
+  fill:#333;
+  stroke:none;
+}
+
 .compass .blocker[data-id="close"] {
   position:absolute;
   left:182px;
