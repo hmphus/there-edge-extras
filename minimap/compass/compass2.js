@@ -59,7 +59,6 @@ class DiphyState {
   }
 }
 
-
 There.init({
   data: {
     location: {},
@@ -216,17 +215,29 @@ There.init({
       location.point = point2;
       There.updateLocationPoint();
     }
+    let point3 = {
+      x: point1.x,
+      y: point1.y,
+    };
+    if (point1.x >= 536.0 && point1.x < 552.0 && point1.y >= 872.0 && point1.y < 888.0) {
+      point3.x += 0.02;
+      point3.y += (point3.y - 875.396) * 0.03 + 0.007;
+    }
+    let point4 = {
+      x: Math.floor(point3.x * 256.0),
+      y: Math.floor(point3.y * 256.0),
+    };
     let offset = {
-      x: 128 - (point2.x % 256),
-      y: 128 - (point2.y % 256),
+      x: 128 - (point4.x % 256),
+      y: 128 - (point4.y % 256),
     };
     if (location.offset?.x != offset.x || location.offset?.y != offset.y) {
       location.offset = offset;
       There.updateLocationOffset();
     }
     let tile = {
-      x: Math.floor(point1.x),
-      y: Math.floor(point1.y),
+      x: Math.floor(point3.x),
+      y: Math.floor(point3.y),
     };
     if (location.tile?.x != tile.x || location.tile?.y != tile.y) {
       location.tile = tile;
@@ -438,7 +449,7 @@ There.init({
       return url; // Comet
     }
     if (There.testTile(tile, [67, 2, 109, 2])) {
-      return url; // California
+      return url; // Aurora
     }
     return `https://${There.variables.there_webapps}/gmap/water.png`;
   },
