@@ -215,29 +215,17 @@ There.init({
       location.point = point2;
       There.updateLocationPoint();
     }
-    let point3 = {
-      x: point1.x,
-      y: point1.y,
-    };
-    if (point1.x >= 536.0 && point1.x < 552.0 && point1.y >= 872.0 && point1.y < 888.0) {
-      point3.x += 0.02;
-      point3.y += (point3.y - 875.396) * 0.03 + 0.007;
-    }
-    let point4 = {
-      x: Math.floor(point3.x * 256.0),
-      y: Math.floor(point3.y * 256.0),
-    };
     let offset = {
-      x: 128 - (point4.x % 256),
-      y: 128 - (point4.y % 256),
+      x: 128 - (point2.x % 256),
+      y: 128 - (point2.y % 256),
     };
     if (location.offset?.x != offset.x || location.offset?.y != offset.y) {
       location.offset = offset;
       There.updateLocationOffset();
     }
     let tile = {
-      x: Math.floor(point3.x),
-      y: Math.floor(point3.y),
+      x: Math.floor(point1.x),
+      y: Math.floor(point1.y),
     };
     if (location.tile?.x != tile.x || location.tile?.y != tile.y) {
       location.tile = tile;
@@ -303,6 +291,8 @@ There.init({
         }
       }
     }
+    $('.compass .debug table tr:eq(0) td:eq(1)').text(coordinate.x.toFixed(2));
+    $('.compass .debug table tr:eq(0) td:eq(2)').text(coordinate.y.toFixed(2));
   },
 
   updateLocationPoint: function() {
@@ -321,6 +311,8 @@ There.init({
         $(`.compass svg.navigation polyline[data-id="3"]`).attr('points', navigation.slice(2).join(' '));
       }
     }
+    $('.compass .debug table tr:eq(1) td:eq(1)').text(point.x.toFixed(2));
+    $('.compass .debug table tr:eq(1) td:eq(2)').text(point.y.toFixed(2));
   },
 
   updateLocationOffset: function() {
@@ -328,7 +320,9 @@ There.init({
     if (offset == undefined) {
       return;
     }
-    $('.compass .main').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`)
+    $('.compass .main').css('--offset-x', `${offset.x}px`).css('--offset-y', `${offset.y}px`);
+    $('.compass .debug table tr:eq(3) td:eq(1)').text(offset.x.toFixed(2));
+    $('.compass .debug table tr:eq(3) td:eq(2)').text(offset.y.toFixed(2));
   },
 
   updateLocationTile: function() {
@@ -336,13 +330,15 @@ There.init({
     if (tile == undefined) {
       return;
     }
+    foundAny = false
     for (let x of [0, 1, 2]) {
       for (let y of [0, 1, 2]) {
         let offsetTile = {
           x: tile.x + (x - 1),
           y: tile.y + (y - 1),
         };
-        let url = There.getTileUrl(offsetTile);
+        let [found, url] = There.getTileUrl(offsetTile);
+        foundAny ||= found;
         $(`.compass .map .tile[data-x="${x}"][data-y="${y}"]`).css('background-image', `url(${url})`);
         let divIconsTile = $(`.compass .icons .tile[data-x="${x}"][data-y="${y}"]`);
         $(divIconsTile).empty();
@@ -358,6 +354,9 @@ There.init({
         }
       }
     }
+    $('.compass .debug table tr:eq(2) td:eq(1)').text(tile.x.toFixed(2));
+    $('.compass .debug table tr:eq(2) td:eq(2)').text(tile.y.toFixed(2));
+    $('.compass .debug').attr('data-found', foundAny ? '1' : '0');
   },
 
   getArcDistance: function(x1, y1, x2, y2) {
@@ -432,26 +431,29 @@ There.init({
 
   getTileUrl: function(tile) {
     let zoom = There.data.zoom;
+    if (tile.x >= 526 && tile.x <= 527 && tile.y == 845) { // Kiani
+      return [true, `https://www.hmph.us/there/minimap/${zoom}-${tile.y}-${tile.x}.png`];
+    }
     let url = `https://${There.variables.there_webapps}/gmap/${zoom}-0-0/${zoom}-${tile.y}-${tile.x}.png`;
-    if (There.testTile(tile, [64, 4, 104, 2])) {
-      return url; // Tiki
+    if (There.testTile(tile, [64, 4, 104, 2])) { // Tiki
+      return [true, url];
     }
-    if (There.testTile(tile, [61, 1, 28, 1])) {
-      return url; // Frosty
+    if (There.testTile(tile, [61, 1, 28, 1])) { // Frosty
+      return [true, url];
     }
-    if (There.testTile(tile, [56, 1, 103, 1])) {
-      return url; // Tyr
+    if (There.testTile(tile, [56, 1, 103, 1])) { // Tyr
+      return [true, url];
     }
-    if (There.testTile(tile, [62, 2, 109, 2])) {
-      return url; // Kansas
+    if (There.testTile(tile, [62, 2, 109, 2])) { // New Kansas
+      return [true, url];
     }
-    if (There.testTile(tile, [57, 2, 108, 2])) {
-      return url; // Comet
+    if (There.testTile(tile, [57, 2, 108, 2])) { // Comet
+      return [true, url];
     }
-    if (There.testTile(tile, [67, 2, 109, 2])) {
-      return url; // Aurora
+    if (There.testTile(tile, [67, 2, 109, 2])) { // Aurora
+      return [true, url];
     }
-    return `https://${There.variables.there_webapps}/gmap/water.png`;
+    return [false, `https://${There.variables.there_webapps}/gmap/water.png`];
   },
 
   getTileIcons: function(tile) {
@@ -1270,8 +1272,12 @@ $(document).ready(function() {
 
   $('.compass .button[data-id="expand"]').on('click', function(event) {
     if ($('.compass').attr('data-mode') == 'map') {
-    $('.compass').attr('data-mode', 'pick');
-      There.fetchTracks();
+      if (event.shiftKey) {
+        $('.compass').attr('data-mode', 'debug');
+      } else {
+        $('.compass').attr('data-mode', 'pick');
+        There.fetchTracks();
+      }
     } else {
       $('.compass').attr('data-mode', 'map');
       There.exitRace();

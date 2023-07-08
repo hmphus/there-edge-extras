@@ -42,6 +42,10 @@ body {
   height:340px;
 }
 
+.compass[data-mode="debug"] {
+  height:292px;
+}
+
 .compass .main {
   position:absolute;
   left:0px;
@@ -431,7 +435,8 @@ body {
 .compass[data-mode="login"] .button[data-id="expand"],
 .compass[data-mode="pick"] .button[data-id="expand"],
 .compass[data-mode="race"] .button[data-id="expand"],
-.compass[data-mode="edit"] .button[data-id="expand"] {
+.compass[data-mode="edit"] .button[data-id="expand"],
+.compass[data-mode="debug"] .button[data-id="expand"] {
   background-position-y:-207px;
 }
 
@@ -802,6 +807,49 @@ body {
 
 .compass[data-state="full"][data-mode="pick"] .contextmenu[data-active="1"] {
   display:block;
+}
+
+.compass .debug {
+  position:absolute;
+  left:0px;
+  top:200px;
+  right:0px;
+  bottom:0px;
+  display:none;
+}
+
+.compass[data-mode="debug"] .debug {
+  display:block;
+}
+
+.compass .debug .panel {
+  position:absolute;
+  left:6px;
+  top:6px;
+  right:6px;
+  bottom:6px;
+  padding:6px;
+  border:1px solid #333;
+  background-color:#c4f0f8;
+}
+
+.compass .debug[data-found="0"] .panel {
+  background-color:#f2d4a3;
+}
+
+.compass .debug .panel table {
+  width:100%;
+  height:100%;
+}
+
+.compass .debug .panel table td {
+  font-size:11px;
+  line-height:12px;
+  text-align:right;
+}
+
+.compass .debug .panel table td:nth-of-type(1) {
+  text-align:left;
 }
 
 .contextmenu .item {
