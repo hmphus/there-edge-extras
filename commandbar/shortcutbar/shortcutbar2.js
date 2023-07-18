@@ -478,7 +478,7 @@ There.init({
           }
         }
         text = text.trim();
-        if (author == There.variables.there_pilotname) {
+        if (author.toLowerCase() == There.variables.there_pilotname?.toLowerCase()) {
           if (text.startsWith('/')) {
             let args = text.split(' ');
             let command = args.shift().slice(1).toLowerCase();
