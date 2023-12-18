@@ -698,6 +698,15 @@
       "help": "Open help page",
       "browser": "https://github.com/hmphus/there-edge-extras/wiki/Command-Bar"
     },
+    "submissions": {
+      "aliases": ["subs"],
+      "help": "Open developer management tool",
+      "browser": "https://www.hmph.us/there/developer/"
+    },
+    "tracks": {
+      "help": "Open track management tool",
+      "browser": "https://www.hmph.us/there/minimap/"
+    },
     "url": {
       "help": "Open the last URL typed in chat by anyone",
       "browser": "$var(there_lasturl)"
