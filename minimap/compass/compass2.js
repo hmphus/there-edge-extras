@@ -71,6 +71,7 @@ There.init({
     zoom: 10,
     skipped: false,
     radius: 6000000.0,
+    protocol: 1,
   },
 
   onReady: function() {
@@ -167,6 +168,9 @@ There.init({
     $.ajax({
       url: 'https://www.hmph.us/there/api/minimap/places/',
       method: 'POST',
+      data: {
+        protocol: There.data.protocol,
+      },
       dataType: 'json',
       success: function(data) {
         There.data.places = data.places ?? {};
@@ -259,9 +263,9 @@ There.init({
       let track = There.data.track;
       if (track.index < track.waypoints.length) {
         let waypoint = track.waypoints[track.index];
-        let distance = There.getArcDistance(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
+        let distance = There.getArcDistance(waypoint.coordinate[0], waypoint.coordinate[1], coordinate.x, coordinate.y);
         let distanceText = There.getDistanceText(distance);
-        let direction = There.getDirection(waypoint.position[0], waypoint.position[1], coordinate.x, coordinate.y);
+        let direction = There.getDirection(waypoint.coordinate[0], waypoint.coordinate[1], coordinate.x, coordinate.y);
         let heading = parseFloat(There.variables.there_avheading ?? 0);
         $('.compass .race .body[data-id="navigation"] ul li:eq(0) span:eq(1)').text(distanceText);
         $('.compass .race .body[data-id="notice"] .text').text(distanceText);
@@ -482,6 +486,7 @@ There.init({
       url: 'https://www.hmph.us/there/api/minimap/login/',
       method: 'POST',
       data: {
+        protocol: There.data.protocol,
         avatar_name: There.variables.there_pilotname ?? '',
         password: password,
       },
@@ -522,6 +527,7 @@ There.init({
       url: 'https://www.hmph.us/there/api/minimap/tracks/',
       method: 'POST',
       data: {
+        protocol: There.data.protocol,
         token: There.getToken(),
         avatar_name: There.variables.there_pilotname ?? '',
       },
@@ -667,6 +673,7 @@ There.init({
       url: 'https://www.hmph.us/there/api/minimap/track/',
       method: 'POST',
       data: {
+        protocol: There.data.protocol,
         token: There.getToken(),
         avatar_name: There.variables.there_pilotname ?? '',
         id: id,
@@ -683,6 +690,7 @@ There.init({
   setupRace: function() {
     let track = There.data.track;
     track.time = Date.now();
+    track.duration = null;
     if (There.data.audio == undefined) {
       let waypointAudio = new Audio('/resources/gamekit/racekit/right_gate.ogg');
       waypointAudio.volume = 0.35;
@@ -711,7 +719,7 @@ There.init({
       There.exitRace();
     });
     $('.compass .race .button[data-id="about"]').off('click').on('click', function() {
-      There.fsCommand('browser', track.url);
+      There.fsCommand('browser', track.view_url);
     });
     There.setupRaceWaypoint();
   },
@@ -753,7 +761,7 @@ There.init({
         let distanceText = '';
         if (i > 0) {
           let waypoint2 = track.waypoints[i - 1];
-          let distance = There.getArcDistance(waypoint.position[0], waypoint.position[1], waypoint2.position[0], waypoint2.position[1]);
+          let distance = There.getArcDistance(waypoint.coordinate[0], waypoint.coordinate[1], waypoint2.coordinate[0], waypoint2.coordinate[1]);
           distanceText = There.getDistanceText(distance);
         }
         let li = $('<li>');
@@ -768,7 +776,12 @@ There.init({
       $('.compass .button[data-id="close"]').attr('data-enabled', track.index > 0 ? '0' : '1');
       $('.compass .button[data-id="expand"]').attr('data-enabled', track.index > 0 ? '0' : '1');
     } else {
-      $('.compass .race .body[data-id="summary"]').text(`You reached the goal in ${There.getDurationText(Date.now() - track.time)}.`);
+      let goalText = 'You reached the goal';
+      if (track.duration != null) {
+        goalText += ` in ${There.getDurationText(track.duration)}`;
+      }
+      goalText += '.';
+      $('.compass .race .body[data-id="summary"]').text(goalText);
       $('.compass .race').attr('data-active', '0').attr('data-notice', '0');
       $('.compass .race .button[data-id="go"]').attr('data-enabled', !track.teleport ? '0' : '1');
       $('.compass .button[data-id="close"]').attr('data-enabled', '1');
@@ -784,30 +797,41 @@ There.init({
     let track = There.data.track;
     if (track.index < track.waypoints.length) {
       $.ajax({
-        url: 'https://www.hmph.us/there/api/minimap/waypoint/',
+        url: 'https://www.hmph.us/there/api/minimap/pass/',
         method: 'POST',
         data: {
+          protocol: There.data.protocol,
           token: There.getToken(),
           avatar_name: There.variables.there_pilotname ?? '',
           track_id: track.id,
           index: track.index,
           x: x,
           y: y,
+          vehicle: There.data.locomotion.vehicle.type ?? 'Walking',
         },
         dataType: 'json',
         success: function(data) {
+          if (data.result.is_complete) {
+            track.duration = data.result.duration;
+          }
+        },
+        complete: function(jqXHR, status) {
+          if (track.index == 0) {
+            track.time = Date.now();
+            track.duration = null;
+          }
+          track.index++;
+          if (track.index == track.waypoints.length && track.duration == null) {
+            track.duration = Date.now() - track.time;
+          }
+          There.setupRaceWaypoint();
+          if (track.index == track.waypoints.length) {
+            There.data.audio.finish.play();
+          } else {
+            There.data.audio.waypoint.play();
+          }
         },
       });
-      if (track.index == 0) {
-        track.time = Date.now();
-      }
-      track.index++;
-      There.setupRaceWaypoint();
-      if (track.index == track.waypoints.length) {
-        There.data.audio.finish.play();
-      } else {
-        There.data.audio.waypoint.play();
-      }
     }
   },
 
