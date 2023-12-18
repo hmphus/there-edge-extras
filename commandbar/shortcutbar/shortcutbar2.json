@@ -411,10 +411,6 @@
           "viewScale": "5.0",
           "skuteLodDistanceDelta": "700.0"
         }
-      },
-      "environment": {
-        "key": "forceToLod",
-        "value": "1"
       }
     },
     "noquality": {
@@ -425,10 +421,6 @@
           "viewScale": "1.0",
           "skuteLodDistanceDelta": "-1.0"
         }
-      },
-      "environment": {
-        "key": "forceToLod",
-        "value": "0"
       }
     },
     "viewscale": {
