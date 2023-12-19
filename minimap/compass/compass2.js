@@ -140,7 +140,7 @@ There.init({
       success: function(xml) {
         There.onLocationXml(xml);
       },
-      complete: function(jqXHR, status) {
+      complete: function() {
         let timeout = $('.compass').attr('data-mode') == 'race' ? 250 : 1000;
         There.setNamedTimer('fetch-location', timeout, function() {
           There.fetchLocation();
@@ -261,8 +261,9 @@ There.init({
     }
     if ($('.compass').attr('data-mode') == 'race' && There.data.track != undefined) {
       let track = There.data.track;
-      if (track.index < track.waypoints.length) {
-        let waypoint = track.waypoints[track.index];
+      let index = track.index;
+      if (index < track.waypoints.length) {
+        let waypoint = track.waypoints[index];
         let distance = There.getArcDistance(waypoint.coordinate[0], waypoint.coordinate[1], coordinate.x, coordinate.y);
         let distanceText = There.getDistanceText(distance);
         let direction = There.getDirection(waypoint.coordinate[0], waypoint.coordinate[1], coordinate.x, coordinate.y);
@@ -290,7 +291,7 @@ There.init({
           let x = coordinate.x;
           let y = coordinate.y;
           There.setNamedTimer('track-waypoint-pass', 50, function() {
-            There.passRaceWaypoint(x, y);
+            There.passRaceWaypoint(index, x, y, false);
           });
         }
       }
@@ -691,6 +692,7 @@ There.init({
     let track = There.data.track;
     track.time = Date.now();
     track.duration = null;
+    track.passing = null;
     if (There.data.audio == undefined) {
       let waypointAudio = new Audio('/resources/gamekit/racekit/right_gate.ogg');
       waypointAudio.volume = 0.35;
@@ -726,6 +728,7 @@ There.init({
 
   exitRace: function() {
     There.clearNamedTimer('track-waypoint-pass');
+    There.clearNamedTimer('track-waypoint-retry');
     There.clearNamedTimer('track-waypoint-notice');
     delete There.data.track;
     $('.compass .race').attr('data-active', '0').attr('data-notice', '0');
@@ -790,37 +793,67 @@ There.init({
     There.updateLocation();
   },
 
-  passRaceWaypoint: function(x, y) {
+  passRaceWaypoint: function(index, x, y, is_retry) {
     if ($('.compass').attr('data-mode') != 'race' || There.data.track == undefined) {
       return;
     }
     let track = There.data.track;
-    if (track.index < track.waypoints.length) {
-      $.ajax({
-        url: 'https://www.hmph.us/there/api/minimap/pass/',
-        method: 'POST',
-        data: {
-          protocol: There.data.protocol,
-          token: There.getToken(),
-          avatar_name: There.variables.there_pilotname ?? '',
-          track_id: track.id,
-          index: track.index,
-          x: x,
-          y: y,
-          vehicle: There.data.locomotion.vehicle.type ?? 'Walking',
-        },
-        dataType: 'json',
-        success: function(data) {
-          if (data.result.is_complete) {
-            track.duration = data.result.duration;
-          }
-        },
-        complete: function(jqXHR, status) {
-          if (track.index == 0) {
+    if (index != track.index) {
+      return;
+    }
+    if (index >= track.waypoints.length) {
+      return;
+    }
+    if (!is_retry) {
+      if (track.passing != null) {
+        return;
+      }
+      track.passing = {
+        index: index,
+        x: x,
+        y: y,
+        count: 0,
+        is_recorded: false,
+      };
+    }
+    if (index !== track.passing?.index) {
+      return;
+    }
+    track.passing.count++;
+    $.ajax({
+      url: 'https://www.hmph.us/there/api/minimap/pass/',
+      method: 'POST',
+      data: {
+        protocol: There.data.protocol,
+        token: There.getToken(),
+        avatar_name: There.variables.there_pilotname ?? '',
+        track_id: track.id,
+        index: index,
+        x: x,
+        y: y,
+        vehicle: There.data.locomotion.vehicle.type ?? 'Walking',
+      },
+      dataType: 'json',
+      success: function(data) {
+        if (data.result?.is_complete) {
+          track.duration = data.result.duration;
+        }
+        track.passing.is_recorded = true;
+      },
+      complete: function() {
+        if (!track.passing.is_recorded && track.passing.count < 5) {
+          There.setNamedTimer('track-waypoint-retry', 1000, function() {
+            There.passRaceWaypoint(index, x, y, true);
+          });
+          return;
+        }
+        track.passing = null;
+        if (index == track.index) {
+          track.index++;
+          if (track.index == 1) {
             track.time = Date.now();
             track.duration = null;
           }
-          track.index++;
           if (track.index == track.waypoints.length && track.duration == null) {
             track.duration = Date.now() - track.time;
           }
@@ -830,9 +863,9 @@ There.init({
           } else {
             There.data.audio.waypoint.play();
           }
-        },
-      });
-    }
+        }
+      },
+    });
   },
 
   fetchLocomotion: async function() {
