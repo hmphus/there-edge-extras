@@ -125,6 +125,7 @@ There.init({
       There.variables.there_pilotdoid = doid;
       There.variables.there_pilotname = name;
       There.data.prefix = `hmph.mods.minimap.${doid}`;
+      $('.compass').attr('data-view', There.getViewMode());
       $('.compass').attr('data-ready', '1');
       $('.compass .login span[data-id="name"]').text(name);
     }
@@ -504,6 +505,19 @@ There.init({
         $('.compass .login').attr('data-loading', '0');
       },
     });
+  },
+
+  setViewMode: function(mode) {
+    if (There.data.prefix != undefined) {
+      window.localStorage.setItem(`${There.data.prefix}.view`, mode);
+    }
+  },
+
+  getViewMode: function() {
+    if (There.data.prefix != undefined) {
+      return window.localStorage.getItem(`${There.data.prefix}.view`) ?? 'heading';
+    }
+    return '';
   },
 
   setToken: function(token) {
@@ -1321,6 +1335,15 @@ $(document).ready(function() {
     event.stopPropagation();
   }).on('mouseup', function(event) {
     There.playSound('control up');
+  });
+
+  $('.compass .button[data-id="view"]').on('click', function(event) {
+    let mode = {
+      'heading': 'fixed',
+      'fixed': 'heading',
+    }[$('.compass').attr('data-view')];
+    $('.compass').attr('data-view', mode);
+    There.setViewMode(mode);
   });
 
   $('.compass .button[data-id="close"]').on('click', function(event) {
