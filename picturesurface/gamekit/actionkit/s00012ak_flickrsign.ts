@@ -312,7 +312,7 @@ function s00012ak__makeDisplay( this )
         zoom = zoom,
         directDraw = 1, -- enables direct use of texture on quad, instead of via intermediate graster
         layout = layout,
-        url = url,
+        url = "http://www.hmph.us/there/picturesurface/?url=" .. url, -- workaround for chunked transfer encoding issue
         authorDoid = authorDoid,
         hideIfIgnored = 1,  -- suppresses display if viewer is ignoring the author
       },
